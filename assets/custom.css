@@ -1,0 +1,167 @@
+/* 基础排版 */
+:root {
+  --base-font-size: 16px;
+  --line-height: 1.7;
+}
+
+.sidebar {
+  width: 240px;
+}
+.sidebar-toggle {
+  width: 240px;
+}
+
+.sidebar li>p {
+  margin: 0 0 0 0.3rem;
+}
+
+.content {
+  left: 240px;
+  bottom: auto;
+  padding-bottom: 2rem;
+}
+
+.nav {
+  width: var(--toc-width, 280px) !important;
+  margin-top: 1rem;
+}
+
+
+.markdown-section {
+  margin: 0 1rem !important;
+  padding: 1rem !important;
+  max-width: 100%;
+}
+
+.anchor span {
+  color: #2c3e50;
+  font-weight: bolder;
+}
+
+.sidebar>h1 a {
+  color: #2c3e50;
+  font-weight: bolder;
+}
+
+.sidebar ul li a {
+  color: #476582;
+}
+
+.sidebar {
+  margin: 0 0.6rem !important;
+}
+
+.sidebar ul {
+  margin: 0 0 0 0.6rem !important;
+}
+
+
+.sidebar .level-1 > ul > li > a {
+  font-size: 0.9rem !important;
+  font-weight: 800 !important;
+}
+
+.sidebar .level-1 > ul > li > a:before {
+  content: "•";
+  color: #476582;
+  font-size: 0.8rem !important;
+  margin-right: 0.3rem;
+}
+
+.markdown-section h1,
+.markdown-section h2,
+.markdown-section h3,
+.markdown-section ol,
+.markdown-section pre,
+.markdown-section p,
+.markdown-section blockquote,
+.markdown-section ul {
+  margin: 1rem 0;
+}
+
+.markdown-section>ul>li>ul {
+  margin: 0.2rem 0;
+} 
+
+.markdown-section p {
+  color: #2c3e50;
+}
+
+.markdown-section pre>code {
+  padding: 0.5rem 0;
+}
+
+.search {
+  margin-bottom: 0 !important;
+}
+
+.sidebar > h1 {
+  text-align: left;
+  padding-left: 0.3em;
+  margin: 0.3rem !important;
+}
+
+.sidebar-nav > ul {
+  padding-left: 0.8em;
+}
+
+/* 内容区最大宽度与间距 */
+.content {
+  padding-top: 0.2rem;
+  padding-bottom: 0.1rem;
+}
+
+.markdown-section pre {
+  border-radius: 6px;
+}
+
+.markdown-section code {
+  border-radius: 4px;
+}
+
+/* 代码高亮：行内 code 浅底，代码块 pre 深色 */
+.markdown-section code {
+  background-color: #e8ecf0;
+  color: #ff0000;
+}
+.markdown-section pre {
+  background-color: #010c05;
+}
+.markdown-section pre > code {
+  background-color: transparent;
+  color: #f3f3f3;
+}
+
+.token.punctuation {
+  color: #ceddff;
+}
+
+.token.atrule, .token.builtin, .token.important, .token.keyword, .token.selector {
+  color: #f292f4;
+}
+
+.token.attr-name, .token.deleted, .token.namespace, .token.tag {
+  color: #ff8e91;
+}
+
+.token.boolean, .token.function, .token.number {
+  color: #ffc27c;
+}
+
+.token.attr-value, .token.char, .token.regex, .token.string, .token.variable {
+  color: #99ff99;
+}
+.token.entity, .token.operator, .token.url {
+  color: #8ff4ff;
+}
+.token.class-name, .token.constant, .token.property, .token.symbol {
+  color: #ecff87;
+}
+
+/* 小屏幕下隐藏导航 */
+@media (max-width: 1200px) {
+  .nav {
+    display: none !important;
+  }
+}
+
