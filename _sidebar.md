@@ -1,18 +1,18 @@
 - 前言
 
-  - [前言](start/start.md)
-  - [简介](base/intro.md)
-  - [语言对照](start/compare.md)
+  - [前言](preface/preface.md)
+  - [简介](preface/intro.md)
+  - [语言对照](preface/compare.md)
 
 - 快速开始
 
   - [Hello World](start/hello-world.md)
-  - [环境准备](base/env.md)
-  - [头文件与构建模型](base/header-and-build.md)
+  - [环境准备](start/env.md)
+  - [头文件与构建模型](start/header-and-build.md)
 
 - 语言基础
 
-  - [基础语法](base/lang.md)
+  - [初次见面](base/lang.md)
   - [基础类型](base/base-type.md)
   - [变量](base/var.md)
   - [常量](base/const.md)

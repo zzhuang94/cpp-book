@@ -1,27 +1,19 @@
 #include <iostream>
-#include <memory>
-#include <vector>
-
-class Printer {
-public:
-    virtual ~Printer() = default;
-    virtual void print(int value) const = 0;
-};
-
-class ConsolePrinter : public Printer {
-public:
-    void print(int value) const override {
-        std::cout << value << std::endl;
-    }
-};
+#include <string>
 
 int main() {
-    std::vector<int> values{1, 2, 3};
-    std::unique_ptr<Printer> printer(new ConsolePrinter());
+    int count{10};
+    long long total = 9000000000LL;
+    double ratio = 0.75;
+    bool enabled = true;
+    char level = 'A';
+    std::string name = "cpp11";
 
-    for (const auto& value : values) {
-        printer->print(value);
-    }
-
+    std::cout << "count = " << count << std::endl;
+    std::cout << "total = " << total << std::endl;
+    std::cout << "ratio = " << ratio << std::endl;
+    std::cout << "enabled = " << enabled << std::endl;
+    std::cout << "level = " << level << std::endl;
+    std::cout << "name = " << name << std::endl;
     return 0;
 }
