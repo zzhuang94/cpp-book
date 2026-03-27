@@ -158,6 +158,67 @@
   color: #ecff87;
 }
 
+/* C/C++ 代码块提升可读性 */
+pre code.language-cpp .token.keyword,
+pre code.language-c .token.keyword,
+pre code[class*="language-cpp"] .token.keyword,
+pre code[class*="language-c"] .token.keyword {
+  color: #c792ea;
+  font-weight: 600;
+}
+
+pre code.language-cpp .token.operator,
+pre code.language-cpp .token.punctuation,
+pre code.language-c .token.operator,
+pre code.language-c .token.punctuation,
+pre code[class*="language-cpp"] .token.operator,
+pre code[class*="language-cpp"] .token.punctuation,
+pre code[class*="language-c"] .token.operator,
+pre code[class*="language-c"] .token.punctuation {
+  color: #cbd5e1;
+}
+
+pre code.language-cpp .token.class-name,
+pre code.language-cpp .token.function,
+pre code.language-c .token.class-name,
+pre code.language-c .token.function,
+pre code[class*="language-cpp"] .token.class-name,
+pre code[class*="language-cpp"] .token.function,
+pre code[class*="language-c"] .token.class-name,
+pre code[class*="language-c"] .token.function {
+  color: #82aaff;
+}
+
+pre code.language-cpp .token.string,
+pre code.language-cpp .token.char,
+pre code.language-c .token.string,
+pre code.language-c .token.char,
+pre code[class*="language-cpp"] .token.string,
+pre code[class*="language-cpp"] .token.char,
+pre code[class*="language-c"] .token.string,
+pre code[class*="language-c"] .token.char {
+  color: #c3e88d;
+}
+
+pre code.language-cpp .token.number,
+pre code.language-cpp .token.boolean,
+pre code.language-c .token.number,
+pre code.language-c .token.boolean,
+pre code[class*="language-cpp"] .token.number,
+pre code[class*="language-cpp"] .token.boolean,
+pre code[class*="language-c"] .token.number,
+pre code[class*="language-c"] .token.boolean {
+  color: #f78c6c;
+}
+
+pre code.language-cpp .token.comment,
+pre code.language-c .token.comment,
+pre code[class*="language-cpp"] .token.comment,
+pre code[class*="language-c"] .token.comment {
+  color: #7f8c98;
+  font-style: italic;
+}
+
 /* 小屏幕下隐藏导航 */
 @media (max-width: 1200px) {
   .nav {
