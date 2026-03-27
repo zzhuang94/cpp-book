@@ -23,6 +23,11 @@
       auto2top: true,
       homepage: 'README.md',
       maxLevel: 4,
+      copyCode: {
+        buttonText: '复制',
+        errorText: '复制失败',
+        successText: '已复制',
+      },
       // 当前页面内目录（显示在正文区域，非侧边栏）
       'page-toc': {
         tocMaxLevel: 4,
@@ -34,6 +39,7 @@
   <script src="//cdn.jsdelivr.net/npm/docsify@4"></script>
   <script src="https://cdn.jsdelivr.net/npm/docsify@4/lib/plugins/search.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/docsify-sidebar-collapse/dist/docsify-sidebar-collapse.min.js"></script>
+  <script src="//unpkg.com/docsify-copy-code/dist/docsify-copy-code.min.js"></script>
   <!-- 页面内目录：根据当前页标题自动生成，显示在页面顶部 -->
   <script src="https://cdn.jsdelivr.net/npm/docsify-page-toc@1.0.4/dist/docsify-page-toc.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-bash.min.js"></script>

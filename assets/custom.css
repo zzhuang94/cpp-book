@@ -113,6 +113,7 @@
 
 .markdown-section pre {
   border-radius: 6px;
+  position: relative;
 }
 
 .markdown-section code {
@@ -130,6 +131,21 @@
 .markdown-section pre > code {
   background-color: transparent;
   color: #f3f3f3;
+}
+
+.docsify-copy-code-button {
+  border-radius: 4px !important;
+  top: 10px !important;
+  right: 10px !important;
+  padding: 0.2rem 0.55rem !important;
+  font-size: 12px !important;
+  background: rgba(255, 255, 255, 0.14) !important;
+  color: #f3f3f3 !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+}
+
+.docsify-copy-code-button:hover {
+  background: rgba(255, 255, 255, 0.22) !important;
 }
 
 .token.punctuation {
