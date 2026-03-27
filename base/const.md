@@ -2,7 +2,7 @@
 
 `const` 在 `C++98` 时代就已经非常重要，而在 `C++11` 中，常量表达能力进一步增强，尤其是 `constexpr` 的加入，让“编译期常量”和“只读对象”不再混为一谈。
 
-## `const` 的基本含义
+# `const`
 
 `const` 表示对象初始化后不可修改：
 
@@ -17,7 +17,7 @@ const int maxCount = 100;
 - 只读参数
 - 不希望被误改的局部变量
 
-## 常量引用
+# 常量引用
 
 `const` 最常见的工程用途之一，是作为函数参数避免复制并保证只读：
 
@@ -32,7 +32,7 @@ void printName(const std::string& name) {
 
 这是旧时代 `C++` 就有的高频写法，到 `C++11` 仍然是核心习惯。
 
-## 指针与 `const`
+# 指针与 `const`
 
 这部分很容易混淆：
 
@@ -44,7 +44,7 @@ const int* const p3 = nullptr; // 两者都不可改
 
 记忆方法：看 `const` 修饰谁。
 
-## `constexpr`
+# `constexpr`
 
 `C++11` 新增 `constexpr`，它比 `const` 更强调“编译期可求值”。
 
@@ -57,7 +57,7 @@ constexpr int bufferSize = 256;
 - `const`：运行期初始化后不可改
 - `constexpr`：要求能在编译期求值
 
-## `constexpr` 函数
+# `constexpr` 函数
 
 `C++11` 允许定义简单的 `constexpr` 函数：
 
@@ -73,7 +73,7 @@ constexpr int square(int x) {
 int arr[square(4)];
 ```
 
-## `const` 成员函数
+# `const` 成员函数
 
 成员函数后面的 `const` 表示不会修改对象状态：
 
@@ -93,7 +93,7 @@ private:
 
 这是类接口设计的重要部分，和“这个对象是否可读”直接相关。
 
-## `const` 与 `auto`
+# `const` 与 `auto`
 
 `auto` 会进行类型推导，但 `const` 语义仍然需要注意：
 
@@ -105,7 +105,7 @@ const auto b = x;  // const int
 
 如果你依赖只读语义，不要假设 `auto` 会自动替你保留所有限定信息。
 
-## 一个综合示例
+# 综合示例
 
 ```cpp
 #include <iostream>
@@ -129,7 +129,7 @@ int main() {
 }
 ```
 
-## 推荐实践
+# 推荐实践
 
 - 能只读就加 `const`，把接口意图表达清楚。
 - 函数参数中，大对象优先使用 `const T&`。
@@ -137,6 +137,6 @@ int main() {
 - 为不会修改状态的成员函数加上 `const`。
 - 不要把 `const` 仅仅当成“防止误修改”的修饰词，它也是接口设计的一部分。
 
-## 小结
+# 小结
 
 `const` 解决的是“不可修改”，`constexpr` 解决的是“能否在编译期求值”。理解这两者的区别，是从老式 `C++` 向 `C++11` 过渡时非常关键的一步。
