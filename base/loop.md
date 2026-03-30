@@ -1,46 +1,43 @@
 # 循环
 
-循环结构在 `C++98` 与 `C++11` 之间看起来变化不大，但 `C++11` 增加的范围 `for` 显著改变了容器遍历的默认写法。你接手现代 `C++` 项目时，这一章会非常高频。
+循环结构在 `C++98` 与 `C++11` 之间看起来变化不大，但 `C++11` 增加的范围 `for` 显著改变了容器遍历的默认写法。
 
-# `while`
+# while
+
+适合“循环次数不固定，只要条件满足就继续”的场景。
 
 ```cpp
 #include <iostream>
 
 int main() {
     int i = 0;
-
     while (i < 3) {
         std::cout << i << std::endl;
         ++i;
     }
-
     return 0;
 }
 ```
 
-适合“循环次数不固定，只要条件满足就继续”的场景。
 
-# `do...while`
+# do...while
+
+特点是循环体至少执行一次。
 
 ```cpp
 #include <iostream>
 
 int main() {
     int i = 0;
-
     do {
         std::cout << i << std::endl;
         ++i;
     } while (i < 3);
-
     return 0;
 }
 ```
 
-特点是循环体至少执行一次。
-
-# 传统 `for`
+# 传统 for
 
 ```cpp
 #include <iostream>
@@ -49,18 +46,16 @@ int main() {
     for (int i = 0; i < 5; ++i) {
         std::cout << i << std::endl;
     }
-
     return 0;
 }
 ```
 
 这类写法仍然非常常见，尤其适合：
-
 - 需要索引
 - 明确知道起始、结束和步长
 - 处理裸数组或数值循环
 
-# 范围 `for`
+# 范围 for
 
 这是 `C++11` 循环部分最重要的新增能力。
 
@@ -70,11 +65,9 @@ int main() {
 
 int main() {
     std::vector<int> values{10, 20, 30};
-
     for (int value : values) {
         std::cout << value << std::endl;
     }
-
     return 0;
 }
 ```
@@ -86,10 +79,6 @@ for (auto value : values) {
     std::cout << value << std::endl;
 }
 ```
-
-# 遍历方式
-
-这一点非常重要。
 
 ## 值遍历
 
@@ -116,9 +105,9 @@ for (const auto& value : values) {
 }
 ```
 
-这通常是遍历复杂对象时最推荐的方式。
+> 这通常是遍历复杂对象时最推荐的方式。
 
-# `break` 与 `continue`
+# break 与 continue
 
 ```cpp
 #include <iostream>
@@ -128,11 +117,9 @@ int main() {
         if (i == 3) {
             continue;
         }
-
         if (i == 7) {
             break;
         }
-
         std::cout << i << std::endl;
     }
 
@@ -169,20 +156,18 @@ for (auto value : values) {
 
 int main() {
     std::vector<int> nums{1, 2, 3, 4, 5};
-
     for (auto& n : nums) {
         n *= 10;
     }
-
     for (const auto& n : nums) {
         std::cout << n << std::endl;
     }
-
     return 0;
 }
 ```
 
-循环这一章真正需要建立的判断，是“我到底在做计数，还是在做遍历”。一旦把这个问题想清楚，传统 `for`、范围 `for`、`auto`、`auto&`、`const auto&` 的选择就会自然很多。
+循环这一章真正需要建立的判断，是“我到底在做计数，还是在做遍历”。
+一旦把这个问题想清楚，传统 `for`、范围 `for`、`auto`、`auto&`、`const auto&` 的选择就会自然很多。
 
 # 推荐实践
 
@@ -194,4 +179,5 @@ int main() {
 
 # 小结
 
-`C++11` 没有废掉旧循环，而是让“遍历容器”这件事有了更自然的默认写法。只要你分清楚自己需要的是索引、复制、修改还是只读访问，循环写法就不会乱。
+- `C++11` 没有废掉旧循环，而是让“遍历容器”这件事有了更自然的默认写法。
+- 只要你分清楚自己需要的是索引、复制、修改还是只读访问，循环写法就不会乱。

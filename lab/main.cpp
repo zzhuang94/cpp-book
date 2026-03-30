@@ -1,16 +1,16 @@
 #include <iostream>
 
-void f(int) {
-    std::cout << "int" << std::endl;
+void print() {
+    std::cout << std::endl;
 }
 
-void f(int*) {
-    std::cout << "pointer" << std::endl;
+template <typename T, typename... Args>
+void print(const T& first, const Args&... rest) {
+    std::cout << first << " ";
+    print(rest...);
 }
 
 int main() {
-    f(nullptr);
-    f(0);
-    // f(NULL); 编译失败 call of overloaded 'f(NULL)' is ambiguous
+    print(1, "hello", 3.14);
     return 0;
 }

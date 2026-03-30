@@ -10,7 +10,7 @@
   - [环境准备](start/env.md)
   - [头文件与构建模型](start/header-and-build.md)
 
-- 语言基础
+- 基础教程
 
   - [初次见面](base/lang.md)
   - [基础类型](base/base-type.md)
@@ -20,16 +20,16 @@
   - [运算符](base/operator.md)
   - [条件](base/decision.md)
   - [循环](base/loop.md)
-  - [函数](base/func.md)
-  - [结构体](base/struct.md)
 
-- 常用数据与 I/O
-
-  - [字符串](base/string.md)
-  - [数组](base/array.md)
-  - [I/O](base/io.md)
-  - [时间/日期](base/time.md)
-  - [数据结构](base/data.md)
+- 进阶教程
+  - [字符串](advanced/string.md)
+  - [数组](advanced/array.md)
+  - [函数基础](advanced/func-base.md)
+  - [函数进阶](advanced/func-advanced.md)
+  - [I/O](advanced/io.md)
+  - [时间/日期](advanced/time.md)
+  - [数据结构](advanced/data.md)
+  - [结构体](advanced/struct.md)
 
 - 指针、引用与安全
 
