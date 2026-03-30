@@ -1,18 +1,20 @@
-#include <algorithm>
 #include <iostream>
-#include <vector>
+#include <string>
+
+struct Book {
+    std::string title;
+    int pages;
+
+    void print() const {
+        std::cout << title << ", " << pages << std::endl;
+    }
+};
 
 int main() {
-    std::vector<int> nums{3, 1, 2, 4};
-    auto it = std::find(nums.begin(), nums.end(), 2);
+    Book b1;
+    Book b2{"C++11", 500};
 
-    if (it != nums.end()) {
-        std::cout << *it << std::endl;
-        *it = 20;
-    }
-    for (auto n : nums) {
-        std::cout << n << " ";
-    }
-    std::cout << std::endl;
+    b1.print();
+    b2.print();
     return 0;
 }
