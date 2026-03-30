@@ -26,10 +26,18 @@
   - [数组](advanced/array.md)
   - [函数基础](advanced/func-base.md)
   - [函数进阶](advanced/func-advanced.md)
-  - [I/O](advanced/io.md)
   - [时间/日期](advanced/time.md)
-  - [数据结构](advanced/data.md)
+  - [输入/输出](advanced/io.md)
+  - [容器/算法/迭代器](advanced/data.md)
   - [结构体](advanced/struct.md)
+
+- 面向对象
+
+  - [类/对象](oop/base.md)
+  - [继承](oop/inherit.md)
+  - [多态](oop/polymorphism.md)
+  - [重载](oop/overload.md)
+  - [接口](oop/interface.md)
 
 - 指针、引用与安全
 
@@ -41,14 +49,6 @@
 - 泛型与现代特性
 
   - [模板入门](base/template.md)
-
-- 面向对象
-
-  - [类/对象](oop/base.md)
-  - [继承](oop/inherit.md)
-  - [多态](oop/polymorphism.md)
-  - [重载](oop/overload.md)
-  - [接口](oop/interface.md)
 
 - 并发与系统能力
 

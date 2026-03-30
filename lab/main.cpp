@@ -1,16 +1,18 @@
+#include <algorithm>
 #include <iostream>
-
-void print() {
-    std::cout << std::endl;
-}
-
-template <typename T, typename... Args>
-void print(const T& first, const Args&... rest) {
-    std::cout << first << " ";
-    print(rest...);
-}
+#include <vector>
 
 int main() {
-    print(1, "hello", 3.14);
+    std::vector<int> nums{3, 1, 2, 4};
+    auto it = std::find(nums.begin(), nums.end(), 2);
+
+    if (it != nums.end()) {
+        std::cout << *it << std::endl;
+        *it = 20;
+    }
+    for (auto n : nums) {
+        std::cout << n << " ";
+    }
+    std::cout << std::endl;
     return 0;
 }
