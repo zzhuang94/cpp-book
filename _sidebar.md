@@ -22,6 +22,8 @@
   - [循环](base/loop.md)
 
 - 进阶教程
+  - [指针](advanced/pointer.md)
+  - [引用](advanced/ref.md)
   - [字符串](advanced/string.md)
   - [数组](advanced/array.md)
   - [函数基础](advanced/func-base.md)
@@ -29,11 +31,11 @@
   - [时间/日期](advanced/time.md)
   - [输入/输出](advanced/io.md)
   - [容器/算法/迭代器](advanced/data.md)
-  - [结构体](advanced/struct.md)
 
 - 面向对象
 
-  - [类/对象](oop/base.md)
+  - [结构体](oop/struct.md)
+  - [类和对象](oop/base.md)
   - [继承](oop/inherit.md)
   - [多态](oop/polymorphism.md)
   - [重载](oop/overload.md)
@@ -41,8 +43,6 @@
 
 - 指针、引用与安全
 
-  - [指针](base/pointer.md)
-  - [引用](base/ref.md)
   - [异常与错误处理](base/error-and-exception.md)
   - [安全边界与未定义行为](base/safety.md)
 
