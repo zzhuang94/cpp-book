@@ -43,26 +43,21 @@
   - [重载](oop/overload.md)
   - [接口](oop/interface.md)
 
-- 指针、引用与安全
+- 随笔
 
+  - [手动内存管理](note/new-delete.md)
   - [异常与错误处理](base/error-and-exception.md)
   - [安全边界与未定义行为](base/safety.md)
-
-- 泛型与现代特性
-
   - [模板入门](base/template.md)
-
-- 并发与系统能力
-
   - [并发基础](base/thread.md)
-
-- 工程实践
-
   - [调试入门](start/debug.md)
   - [编码规范](start/code-style.md)
 
-- 随笔
+- 常用标准库
 
-  - [std::size_t](note/size-t.md)
+  - [size_t](std/size-t.md)
+  - [copy](std/copy.md)
 
-- [关于本文档](/)
+
+
+- [简介](/)
