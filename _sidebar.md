@@ -28,6 +28,8 @@
   - [数组](advanced/array.md)
   - [函数基础](advanced/func-base.md)
   - [函数进阶](advanced/func-advanced.md)
+  - [函数重载](advanced/overload-func.md)
+  - [运算符重载](advanced/overload-operator.md)
   - [时间/日期](advanced/time.md)
   - [输入/输出](advanced/io.md)
   - [容器/算法/迭代器](advanced/data.md)
