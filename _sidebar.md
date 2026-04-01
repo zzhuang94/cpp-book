@@ -61,4 +61,8 @@
   - [调试入门](start/debug.md)
   - [编码规范](start/code-style.md)
 
+- 随笔
+
+  - [std::size_t](note/size-t.md)
+
 - [关于本文档](/)
