@@ -40,7 +40,6 @@
   - [类和对象](oop/base.md)
   - [继承](oop/inherit.md)
   - [多态](oop/polymorphism.md)
-  - [重载](oop/overload.md)
   - [接口](oop/interface.md)
 
 - 随笔

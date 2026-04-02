@@ -143,32 +143,36 @@ int main() {
 
 # 基类构造
 
-```cpp
-#include <string>
+> 创建派生类对象时，会先构造基类部分。  
+> 如果基类不能“直接无参构造”，那么派生类就必须在初始化列表里明确写出要调用哪个基类构造函数。  
 
+```cpp
 class Animal {
 public:
-    explicit Animal(const std::string& name) : name_(name) {
-    }
-
-protected:
-    std::string name_;
+    Animal() = default;  // 默认构造函数
 };
 
 class Dog : public Animal {
 public:
-    Dog(const std::string& name, int age)
-        : Animal(name), age_(age) {
-    }
-
+    Dog(int age) : age_(age) {}  // 没有显式写 Animal() 也可以
 private:
     int age_;
 };
 ```
 
-如果基类没有默认构造函数，派生类就必须在初始化列表中明确调用合适的基类构造函数。
+```cpp
+class Animal {
+public:
+    explicit Animal(const std::string& name) : name_(name) {}
+};
 
-## 这里最容易忽略什么
+class Dog : public Animal {
+public:
+    Dog(const std::string& name, int age) : Animal(name), age_(age) {}  // 必须显式调用基类构造函数
+private:
+    int age_;
+};
+```
 
 很多人写派生类构造函数时，只关注自己新增的成员，却忘了基类部分也需要被正确初始化。  
 在继承体系里，派生类的构造函数不只是初始化“自己的字段”，还要负责把基类子对象放到正确状态。
@@ -178,24 +182,15 @@ private:
 - 它调用了哪个基类构造函数
 - 这个选择是否符合派生类的语义
 
-## 不要以为“先写谁就先构造谁”
+> 派生类初始化列表里即使把自己的成员写在前面，基类仍然会先构造。  
 
-派生类初始化列表里即使把自己的成员写在前面，基类仍然会先构造。  
-因为顺序不是由你写初始化列表的先后决定的，而是由对象结构本身决定的：
-
-1. 先构造基类子对象
-2. 再构造成员对象
-3. 最后进入派生类构造函数体
-
-所以初始化列表最主要的职责，是**说明怎么初始化**，而不是**改变构造顺序**。
+所以初始化列表最主要的职责，是 *说明怎么初始化*，而不是 *改变构造顺序*。
 
 ----
 
-# 继承中的析构
+# 基类析构
 
-前一章已经讲过析构函数，这里要强调继承体系里最关键的一条额外规则。
-
-如果一个类会被当成基类，并且对象可能通过基类指针删除，那么基类析构函数应当是 `virtual`：
+> 如果一个类会被当成基类，并且对象可能通过 `基类指针删除`，那么基类析构函数应当是 `virtual`：
 
 ```cpp
 class Animal {
@@ -204,8 +199,6 @@ public:
 };
 ```
 
-## 为什么这里必须小心
-
 看下面这个例子：
 
 ```cpp
@@ -213,16 +206,12 @@ public:
 
 class Base {
 public:
-    ~Base() {
-        std::cout << "Base dtor" << std::endl;
-    }
+    ~Base() { std::cout << "Base dtor" << std::endl; }
 };
 
 class Derived : public Base {
 public:
-    ~Derived() {
-        std::cout << "Derived dtor" << std::endl;
-    }
+    ~Derived() { std::cout << "Derived dtor" << std::endl; }
 };
 
 int main() {
@@ -231,16 +220,13 @@ int main() {
 }
 ```
 
-如果基类析构函数不是虚函数，那么这里的 `delete ptr;` 可能只调用 `Base` 的析构，而不调用 `Derived` 的析构。
-
+如果基类析构函数不是虚函数，那么 `delete ptr;` 可能只调用 `Base` 的析构，而不调用 `Derived` 的析构。  
 这会带来两个问题：
 
 - 派生类自己的清理逻辑没有执行
 - 派生类管理的资源可能泄漏
 
-所以这条经验非常重要：
-
-> **只要一个类打算作为多态基类使用，就优先把析构函数写成虚函数。**
+所以这条经验非常重要：**只要一个类打算作为多态基类使用，就优先把析构函数写成虚函数。**
 
 这不是因为“基类一定有资源”，而是因为“销毁动作可能发生在只看得到基类接口的地方”。
 
