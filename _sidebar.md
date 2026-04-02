@@ -45,6 +45,7 @@
 
 - 随笔
 
+  - [几种初始化](note/init.md)
   - [手动内存管理](note/new-delete.md)
   - [异常与错误处理](base/error-and-exception.md)
   - [安全边界与未定义行为](base/safety.md)

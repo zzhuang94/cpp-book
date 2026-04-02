@@ -48,6 +48,139 @@ int main() {
 
 ----
 
+# this 指针
+
+当我们写出下面这样的调用时：
+
+```cpp
+User user("alice");
+user.print();
+```
+
+表面上看只是“对象调用成员函数”，但这里其实包含了一个很重要的事实：
+> 成员函数总是在某个具体对象上执行。
+
+`print()` 能直接访问 `name_`，不是因为成员函数“天然就能看到所有成员”，而是因为它在执行时始终对应着一个当前对象。  
+这个 *当前对象*，在 `C++` 里就是通过 `this` 指针表示的。
+
+可以先把它理解成： **`this` 指向当前正在调用这个成员函数的对象。**
+
+```cpp
+#include <iostream>
+#include <string>
+
+class User {
+public:
+    explicit User(const std::string& name) : name_(name) {}
+    void print() const {
+        std::cout << this->name_ << std::endl;
+    }
+private:
+    std::string name_;
+};
+```
+
+> 这里的 `this->name_` 和直接写 `name_` 在效果上是一样的。  
+
+编译器知道 `print()` 是在某个 `User` 对象上调用的，所以它会把成员访问理解为“访问当前对象的成员”。  
+因此，很多时候我们并不会把 `this->` 显式写出来。
+
+## 为什么要有 this
+
+同一个成员函数可以被很多对象共用，但每次调用时，它都必须知道自己正在处理哪一个对象。
+
+```cpp
+User u1("alice");
+User u2("bob");
+
+u1.print();
+u2.print();
+```
+
+调用的是同一个 `print()`，但输出结果不同。根本原因不是函数代码变了，而是每次调用时 `this` 指向的对象不同：
+
+- 调用 `u1.print()` 时，`this` 指向 `u1`
+- 调用 `u2.print()` 时，`this` 指向 `u2`
+
+所以可以把成员函数粗略理解成：**它比普通函数多了一个隐藏的“当前对象”参数。**
+
+## C++11 里应该怎样理解它
+
+在 `C++11` 的语境下，`this` 最值得掌握的不是“底层语法细节”，而是下面几个用途：
+
+- 它让成员函数和具体对象绑定起来
+- 它让 `const` 成员函数能够表达“我不会修改当前对象”
+- 它支持返回当前对象本身，例如 `return *this;`
+- 它支持判断是否是`同一个对象`，例如 `this == &other`
+
+这几个用途会在类设计里反复出现，尤其是在拷贝赋值、移动赋值、链式调用这些地方。
+
+## const 成员函数和 this
+
+```cpp
+class User {
+public:
+    void set_name(const std::string& name) {
+        name_ = name;
+    }
+    void print() const {
+        std::cout << name_ << std::endl;
+    }
+private:
+    std::string name_;
+};
+```
+
+`set_name()` 可以修改对象状态，而 `print() const` 不可以。从 `this` 的角度看，可以把它们粗略理解成：
+
+- 普通成员函数里，`this` 表示“指向当前对象”
+- `const` 成员函数里，`this` 表示“指向当前常量对象”
+
+所以 `print() const` 里不能随意改 `name_`，因为这等价于“通过当前对象去修改对象状态”，而 `const` 已经禁止了这种行为。
+
+> 这也是 `const` 成员函数真正重要的地方：它不是修饰返回值，而是在约束“当前对象是否允许被修改”。
+
+## 什么时候会显式写 this
+
+初学阶段不需要在每个成员访问前都写 `this->`。在 `C++11` 的日常代码里，显式写出 `this` 通常有几种常见情况：
+
+- 需要强调“这是当前对象的成员”
+- 成员名和参数名重名时，用 `this->name_` 区分
+- 需要返回当前对象本身时，写 `return *this;`
+- 需要判断是不是同一个对象时，写 `this == &other`
+
+比如：
+
+```cpp
+class User {
+public:
+    User& set_name(const std::string& name) {
+        this->name_ = name;
+        return *this;
+    }
+
+private:
+    std::string name_;
+};
+```
+
+这里有两个很典型的写法：
+
+- `this->name_`：表示修改当前对象的成员
+- `return *this;`：返回当前对象本身，从而支持链式调用
+
+后面讲拷贝赋值和移动赋值时，你还会看到：
+
+```cpp
+if (this != &other) {
+    // 避免自己给自己赋值
+}
+```
+
+这时 `this` 的作用就非常直观了：拿 `当前对象的地址` 去和 `另一个对象的地址` 比较。
+
+----
+
 # 访问控制
 
 类中最常见的三个访问级别是：
@@ -348,26 +481,35 @@ public:
 
 ```cpp
 #include <iostream>
+#include <string>
 
-class Trace {
+class Test {
 public:
-    Trace() {
-        std::cout << "construct" << std::endl;
+    Test(const std::string& n) : name(n) {
+        std::cout << "构造: " << name << std::endl;
     }
-
-    ~Trace() {
-        std::cout << "destruct" << std::endl;
+    ~Test() {
+        std::cout << "析构: " << name << std::endl;
     }
+private:
+    std::string name;
 };
 
-int main() {
-    {
-        Trace t;
-    } // 离开作用域，这里自动调用析构函数
-}
+void myFunction() {
+    Test a1("a1");
+    Test a2("a2");
+    Test a3("a3");
+} // 退出函数时，自动触发析构
 
-// 运行时会先输出 `construct`，再输出 `destruct`。
+int main() {
+    std::cout << "--- 进入函数 ---" << std::endl;
+    myFunction();
+    std::cout << "--- 退出函数 ---" << std::endl;
+    return 0;
+}
 ```
+
+> 在 C++ 中，局部对象的析构顺序与它们的构造顺序​​严格相反​​。
 
 ## 现代C++是否需要析构函数
 
@@ -529,174 +671,140 @@ b3: 原始缓冲区
 如果类里只是 `int`、`std::string`、`std::vector` 这类成员，很多时候默认行为已经够用。  
 但如果类自己直接管理原始资源，例如一块动态内存，那事情就不能糊弄过去了。
 
-下面这个例子虽然比前面长一点，但它把“析构、拷贝、移动”三件事完整串起来了：
+> 下面这个例子一定要仔细阅读调试，同时把“构造，析构、拷贝构造、拷贝赋值、移动构造、移动赋值”都串起来
 
 ```cpp
 #include <algorithm>
 #include <cstddef>
+#include <iomanip>
 #include <iostream>
 #include <string>
 #include <utility>
 
 class Buffer {
 public:
+    // 普通构造
     Buffer(std::string name, std::size_t size)
-        : name_(std::move(name)), size_(size), data_(new int[size]) {
+        : name_(std::move(name)), size_(size), data_(size ? new int[size] : nullptr) {
         for (std::size_t i = 0; i < size_; ++i) {
             data_[i] = static_cast<int>(i + 1);
         }
-
-        std::cout << "构造: " << name_
-                  << " 持有地址 " << static_cast<void*>(data_) << '\n';
     }
-
+    // 析构
     ~Buffer() {
-        std::cout << "析构: " << name_
-                  << " 释放地址 " << static_cast<void*>(data_) << '\n';
+        std::cout << "析构: " << name_ << " 释放地址 " << static_cast<void*>(data_) << '\n';
         delete[] data_;
     }
-
-    Buffer(const Buffer& other)
-        : name_(other.name_ + "_copy"),
-          size_(other.size_),
-          data_(other.size_ == 0 ? nullptr : new int[other.size_]) {
-        if (size_ > 0) {
-            std::copy(other.data_, other.data_ + size_, data_);
-        }
-        std::cout << "拷贝构造: 从 " << other.name_
-                  << " 深拷贝出 " << name_
-                  << "，新地址是 " << static_cast<void*>(data_) << '\n';
+    // 拷贝构造
+    Buffer(const Buffer& other) {
+        copy_from(other, "_cp");
     }
-
+    // 拷贝赋值
     Buffer& operator=(const Buffer& other) {
-        if (this == &other) {
-            return *this;
+        if (this != &other) {
+            delete[] data_;
+            copy_from(other, "_cp_assign");
         }
-
-        int* new_data = other.size_ == 0 ? nullptr : new int[other.size_];
-        if (other.size_ > 0) {
-            std::copy(other.data_, other.data_ + other.size_, new_data);
-        }
-
-        delete[] data_;
-        data_ = new_data;
-        size_ = other.size_;
-        name_ = other.name_ + "_copy_assign";
-        std::cout << "拷贝赋值: 现在 " << name_
-                  << " 拥有独立地址 " << static_cast<void*>(data_) << '\n';
         return *this;
     }
-
-    Buffer(Buffer&& other) noexcept
-        : name_(std::move(other.name_)),
-          size_(other.size_),
-          data_(other.data_) {
-        std::cout << "移动构造: " << name_
-                  << " 接管地址 " << static_cast<void*>(data_) << '\n';
-        other.name_ = "[已搬空]";
-        other.size_ = 0;
-        other.data_ = nullptr;
+    // 移动构造
+    Buffer(Buffer&& other) noexcept {
+        take_from(other);
     }
-
+    // 移动赋值
     Buffer& operator=(Buffer&& other) noexcept {
-        if (this == &other) {
-            return *this;
+        if (this != &other) {
+            delete[] data_;
+            take_from(other);
         }
-
-        delete[] data_;
-        name_ = std::move(other.name_);
-        data_ = other.data_;
-        size_ = other.size_;
-        std::cout << "移动赋值: " << name_
-                  << " 接管地址 " << static_cast<void*>(data_) << '\n';
-
-        other.name_ = "[已搬空]";
-        other.data_ = nullptr;
-        other.size_ = 0;
         return *this;
     }
 
     void set(std::size_t index, int value) {
-        if (data_ != nullptr && index < size_) {
-            data_[index] = value;
-        }
+        if (data_ != nullptr && index < size_) data_[index] = value;
     }
 
-    const int* raw_data() const {
-        return data_;
-    }
+    const int* raw_data() const { return data_; }
 
-    void print() const {
-        std::cout << name_ << " | data=" << static_cast<const void*>(data_) << " | values=";
+    void print(std::string prefix = "") const {
+        std::cout << prefix << " : " << std::left
+                  << "name: " << std::setw(20) << name_
+                  << "size: " << std::setw(6) << size_
+                  << "data地址: " << std::setw(18) << static_cast<const void*>(data_)
+                  << "data内容: ";
         if (data_ == nullptr) {
             std::cout << "<null>\n";
             return;
         }
 
-        for (std::size_t i = 0; i < size_; ++i) {
-            std::cout << data_[i] << ' ';
-        }
+        for (std::size_t i = 0; i < size_; ++i) std::cout << data_[i] << ' ';
         std::cout << '\n';
     }
 
 private:
+    void copy_from(const Buffer& other, const char* suffix) {
+        name_ = other.name_ + suffix;
+        size_ = other.size_;
+        data_ = size_ ? new int[size_] : nullptr;
+        if (size_ > 0) std::copy(other.data_, other.data_ + size_, data_);
+    }
+
+    // 注意：这里使用 Buffer& other 既可接受左值，也可接受右值
+    // 如果一定要改成 Buffer&& other，在调用时需要显式使用 std::move(other)
+    void take_from(Buffer& other) {
+        name_ = std::move(other.name_);
+        size_ = other.size_;
+        data_ = other.data_;
+        other.name_ = "[moved]";
+        other.size_ = 0;
+        other.data_ = nullptr;
+    }
+
     std::string name_;
     std::size_t size_ = 0;
     int* data_ = nullptr;
 };
 
 int main() {
-    Buffer a("a", 3);
-    a.print();
+    Buffer a("A", 3);           // 普通构造*
+    Buffer b = a;               // 拷贝构造，b 是 a 的副本
+    Buffer c("C", 1);           // 普通构造*
 
-    std::cout << "---- 拷贝构造 ----\n";
-    Buffer b = a;
+    std::cout << "---- a, b, c 构造完成后 ----" << std::endl;
+    a.print("a");
+    b.print("b");
+    c.print("c");
+
+    c = b;                      // 拷贝赋值，c 被赋值为 b 的副本
+    std::cout << "---- c = b 赋值完成后 ----" << std::endl;
+    b.print("b");
+    c.print("c");
+
+    Buffer d = std::move(a);    // 移动构造，d 接管了 a 的资源
+    std::cout << "---- d = std::move(a) 移动构造完成后 ----" << std::endl;
+    a.print("a");
+    d.print("d");
+
+    Buffer e("E", 1);           // 普通构造*
+    std::cout << "---- e 构造完成后 ----" << std::endl;
+    e.print("e");
+    e = std::move(c);           // 移动赋值，e 接管了 c 的资源
+    std::cout << "---- e = std::move(c) 移动赋值完成后 ----" << std::endl;
+    c.print("c");
+    e.print("e");
+
+    std::cout << "---- b.set(0, 99) 和 e.set(1, 88) 设置完成后 ----" << std::endl;
     b.set(0, 99);
-    a.print();
-    b.print();
-    std::cout << "a 和 b 是否共享同一块内存: "
-              << std::boolalpha << (a.raw_data() == b.raw_data()) << '\n';
+    e.set(1, 88);
+    b.print("b");
+    e.print("e");
 
-    std::cout << "---- 移动构造 ----\n";
-    Buffer c = std::move(a);
-    a.print();
-    c.print();
-    std::cout << "a 移动后是否为空: "
-              << std::boolalpha << (a.raw_data() == nullptr) << '\n';
+    return 0;
 }
+
 ```
 
-可能输出（地址会因机器不同而变化）：
-
-```text
-构造: a 持有地址 0x12345678
-a | data=0x12345678 | values=1 2 3
----- 拷贝构造 ----
-拷贝构造: 从 a 深拷贝出 a_copy，新地址是 0x87654321
-a | data=0x12345678 | values=1 2 3
-a_copy | data=0x87654321 | values=99 2 3
-a 和 b 是否共享同一块内存: false
----- 移动构造 ----
-移动构造: a 接管地址 0x12345678
-[已搬空] | data=0 | values=<null>
-a | data=0x12345678 | values=1 2 3
-a 移动后是否为空: true
-```
-
-这个类里最核心的成员不是 `size_`，而是 `data_`。  
-`data_` 指向一块动态分配的内存，所以必须回答三个问题：
-
-1. 对象销毁时，谁来释放这块内存
-2. 对象复制时，是共享同一块内存，还是复制一份新内存
-3. 对象移动时，旧对象要不要把所有权交出去
-
-上面的实现给出的答案分别是：
-
-- 析构函数负责 `delete[] data_`
-- 拷贝时重新申请新内存，并复制内容
-- 移动时直接转移指针所有权，并把源对象置空
-
-## 如果只写析构，不写拷贝/移动，会怎样
+## 析构与拷贝/移动的关系
 
 这是最容易出问题的地方。
 
@@ -719,16 +827,17 @@ Buffer b = a; // 如果是默认拷贝，这里只是复制指针地址
 初学阶段不必死记术语，但要形成下面的直觉：
 
 - 规则零：不自己管理原始资源时，尽量依赖默认行为
-- 规则三：如果你需要自己写析构、拷贝构造、拷贝赋值，往往三个都要考虑
+- **规则三：如果你需要自己写析构、拷贝构造、拷贝赋值，往往三个都要考虑**
 - 规则五：到了 `C++11`，还要继续考虑移动构造和移动赋值
 
-所以规则三、规则五并不是“背诵题”，而是在提醒你：
-
-> **资源所有权一旦进入类设计，对象的整个生命周期就必须自洽。**
+所以规则三、规则五并不是“背诵题”，而是在提醒你：**资源所有权一旦进入类设计，对象的整个生命周期就必须自洽。**
 
 ----
 
 # RAII
+
+> RAII: ​​Resource Acquisition Is Initialization​​。  
+> 翻译成中文通常是：​​“资源获取即初始化”​​。
 
 现代 `C++` 类设计的一个核心思想是 RAII：**资源在对象构造时获取，在析构时释放。**  
 这意味着类的职责通常不只是保存数据，还包括稳定地管理外部资源，例如：

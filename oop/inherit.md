@@ -1,8 +1,10 @@
 # 继承
 
-继承是 `C++` 面向对象里最经典的话题之一，但现代 `C++` 对继承的态度比过去克制得多。`C++11` 没有改变继承的基本语法，却通过 `override`、`final` 等工具，让“继承到底是不是合理设计”这件事变得更容易表达，也更值得认真判断。
+继承是 `C++` 面向对象里最经典的话题之一，但现代 `C++` 对继承的态度比过去克制得多。
+> 现代C++ 通过 `override`、`final` 等工具，让 `继承到底是不是合理设计` 这件事变得更容易表达
 
-在真实项目里，继承不是默认复用手段，而是一种带有强语义承诺的关系。只要用上继承，就等于在说：“派生类本质上就是基类的一种。”
+在真实项目里，继承不是默认复用手段，而是一种带有强语义承诺的关系。  
+只要用上继承，就等于在说：“派生类本质上就是基类的一种。”
 
 ----
 
@@ -28,57 +30,42 @@ int main() {
 }
 ```
 
-这段代码说明派生类会继承基类可访问的成员能力。在 `public` 继承下，`Dog` 可以直接使用 `Animal` 暴露出来的公共接口。
+这段代码说明派生类会继承基类可访问的成员能力。  
+在 `public` 继承下，`Dog` 可以直接使用 `Animal` 暴露出来的公共接口。
 
-## 先理解继承表达的不是“复用”，而是“关系”
+> 先理解继承表达的不是“复用”，而是“关系”
 
 初学者很容易把继承理解成“少写点代码的办法”。  
-但更准确的理解是：继承首先表达的是类型关系，而不是代码复用技巧。
+但更准确的理解是： **继承首先表达的是类型关系，而不是代码复用技巧。**
 
-所以在决定是否继承前，最关键的问题通常不是“能不能复用那几个成员函数”，而是：
-
+所以在决定是否继承前，最关键的问题通常不是 “能不能复用那几个成员函数”，而是：
 - `Dog` 是不是一种 `Animal`
-- 调用方能不能把 `Dog` 当 `Animal` 使用
+- *调用方能不能把 `Dog` 当 `Animal` 使用*
 - 这个关系在设计上是否稳定
 
-如果这三个问题都答得不自然，就要小心：  
-你可能并不是在建模“继承关系”，而只是想借用几段现成代码。
+如果这三个问题都答得不自然，就要小心：*你可能并不是在建模“继承关系”，而只是想借用几段现成代码。*
 
 ----
 
 # 继承方式
 
-语法上可以写：
-
-- `public` 继承
-- `protected` 继承
-- `private` 继承
-
-其中最常见、最符合 “is-a” 关系的是 `public` 继承。
-
-## 三种继承方式大致怎么理解
-
-- `public` 继承：向外部保留“是一种”的接口语义
+- `public` 继承：向外部保留 `是一种` 的接口语义
 - `protected` 继承：更像给派生类复用的实现机制，较少直接作为公开建模使用
 - `private` 继承：更像“用实现细节”的特殊形式，很多场景下组合通常更清晰
 
 所以大多数面向对象建模里，你真正最常用、也最值得重点掌握的是 `public` 继承。
 
-## 继承后成员可见性会发生什么
+## 继承后成员可见性
 
-很多初学者会把“继承方式”和“成员访问级别”混在一起。  
-这两个概念有关，但不是一回事：
+很多初学者会把 `继承方式` 和 `成员访问级别` 混在一起。这两个概念有关，但不是一回事：
 
 - 成员本身原来是 `public`、`protected` 还是 `private`
 - 派生时又用了 `public`、`protected` 还是 `private` 继承
 
-最需要先记住的是 `public` 继承下的直觉：
-
-- 基类 `public` 成员，在派生类外部仍然按 `public` 使用
-- 基类 `protected` 成员，派生类内部可以用，但外部不能直接用
-- 基类 `private` 成员，不会直接暴露给派生类访问
-
-例如：
+> 最需要先记住的是 `public` 继承下的直觉：
+> - 基类 `public` 成员，在派生类外部仍然按 `public` 使用
+> - 基类 `protected` 成员，派生类内部可以用，但外部不能直接用
+> - 基类 `private` 成员，不会直接暴露给派生类访问
 
 ```cpp
 #include <iostream>
@@ -88,10 +75,8 @@ public:
     void show() const {
         std::cout << "public member" << std::endl;
     }
-
 protected:
     int value_ = 10;
-
 private:
     int hidden_ = 20;
 };
@@ -99,15 +84,14 @@ private:
 class Derived : public Base {
 public:
     void print() const {
-        show();                    // 可以，基类 public 成员
-        std::cout << value_ << std::endl; // 可以，基类 protected 成员
-        // std::cout << hidden_ << std::endl; // 不可以，基类 private 成员
+        show();                                 // 可以，基类 public 成员
+        std::cout << value_ << std::endl;       // 可以，基类 protected 成员
+        // std::cout << hidden_ << std::endl;   // 不可以，基类 private 成员
     }
 };
 ```
 
-这个规则的意义在于：  
-派生类继承的是基类的公开接口和一部分可复用实现，但**不会越过 `private` 边界直接接管基类内部细节**。
+> 派生类继承的是基类的公开接口和一部分可复用实现，但不会越过 `private` 边界直接接管基类内部细节。
 
 ----
 
@@ -125,46 +109,35 @@ public:
 
 class Base {
 public:
-    Base() { std::cout << "Base ctor" << std::endl; }
-    ~Base() { std::cout << "Base dtor" << std::endl; }
+    Base(std::string name) : name_(std::move(name)) {
+        std::cout << "构造基类, name: " << name_ << std::endl; 
+    }
+    ~Base() { std::cout << "销毁基类, name: " << name_ << std::endl; }
+public:
+    std::string name_;
 };
 
 class Derived : public Base {
 public:
-    Derived() { std::cout << "Derived ctor" << std::endl; }
-    ~Derived() { std::cout << "Derived dtor" << std::endl; }
+    Derived(std::string name) : Base(std::move(name)) {
+        std::cout << "构造派生类, name: " << name_ << std::endl; 
+    }
+    ~Derived() { std::cout << "销毁派生类, name: " << name_ << std::endl; }
 };
+
+int main() {
+    Derived a("AAA");
+    Derived b("BBB");
+    return 0;
+}
 ```
 
-## 为什么必须先基类后派生类
-
-因为派生类对象内部本来就包含一个基类子对象。  
+派生类对象内部本来就包含一个基类子对象。  
 只有先把基类部分构造好，派生类才能在一个完整的基础上继续初始化自己。
 
 销毁反过来也是同理：
-
 - 先销毁派生类自己新增的部分
 - 再销毁更基础的基类部分
-
-理解这个顺序后，很多构造和析构相关问题就会更容易推理。
-
-## 运行一下会看到什么
-
-如果创建一个 `Derived` 对象，输出顺序通常是：
-
-```text
-Base ctor
-Derived ctor
-Derived dtor
-Base dtor
-```
-
-也就是：
-
-- 创建时由内到外打基础
-- 销毁时由外到内逐层回收
-
-这和“派生类建立在基类之上”的结构本身是一致的。
 
 ----
 

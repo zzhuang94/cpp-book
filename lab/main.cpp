@@ -1,12 +1,25 @@
 #include <iostream>
 
-class Test {
+class Base {
 public:
-    Test() { std::cout << "construct" << std::endl; }
-    ~Test() { std::cout << "destruct" << std::endl; }
+    Base(std::string name) : name_(std::move(name)) {
+        std::cout << "构造基类, name: " << name_ << std::endl; 
+    }
+    ~Base() { std::cout << "销毁基类, name: " << name_ << std::endl; }
+public:
+    std::string name_;
+};
+
+class Derived : public Base {
+public:
+    Derived(std::string name) : Base(std::move(name)) {
+        std::cout << "构造派生类, name: " << name_ << std::endl; 
+    }
+    ~Derived() { std::cout << "销毁派生类, name: " << name_ << std::endl; }
 };
 
 int main() {
-    Test* p = new Test;
-    delete p;
+    Derived a("AAA");
+    Derived b("BBB");
+    return 0;
 }
