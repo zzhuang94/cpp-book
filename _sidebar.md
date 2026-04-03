@@ -28,6 +28,7 @@
   - [函数重载](advanced/overload-func.md)
   - [运算符重载](advanced/overload-operator.md)
   - [容器/算法/迭代器](advanced/data.md)
+  - [多线程](advanced/thread.md)
 
 - 面向对象
 
@@ -43,7 +44,6 @@
   - [异常与错误处理](base/error-and-exception.md)
   - [安全边界与未定义行为](base/safety.md)
   - [模板入门](base/template.md)
-  - [并发基础](base/thread.md)
   - [调试入门](start/debug.md)
   - [编码规范](start/code-style.md)
 
