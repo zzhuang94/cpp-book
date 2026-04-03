@@ -24,11 +24,12 @@
 - 进阶教程
   - [指针](advanced/pointer.md)
   - [引用](advanced/ref.md)
-  - [函数进阶](advanced/func-advanced.md)
+  - [函数进阶](advanced/func.md)
   - [函数重载](advanced/overload-func.md)
   - [运算符重载](advanced/overload-operator.md)
   - [容器/算法/迭代器](advanced/data.md)
   - [多线程](advanced/thread.md)
+  - [异常与错误处理](advanced/error.md)
 
 - 面向对象
 
@@ -41,7 +42,6 @@
 
   - [几种初始化](note/init.md)
   - [手动内存管理](note/new-delete.md)
-  - [异常与错误处理](base/error-and-exception.md)
   - [安全边界与未定义行为](base/safety.md)
   - [模板入门](base/template.md)
   - [调试入门](start/debug.md)

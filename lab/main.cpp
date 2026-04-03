@@ -1,22 +1,26 @@
+#include <fstream>
 #include <iostream>
-#include <future>
-#include <thread>
+#include <stdexcept>
+#include <string>
 
-int multiply(int a, int b) { return a * b; }
+std::string readFirstLine(const std::string& fileName) {
+    std::ifstream input(fileName.c_str());
+    if (!input) {
+        throw std::runtime_error("failed to open file");
+    }
+    std::string line;
+    if (!std::getline(input, line)) {
+        throw std::runtime_error("failed to read line");
+    }
+    return line;
+}
 
 int main() {
-    // 1. 将普通函数包装成 packaged_task
-    std::packaged_task<int(int, int)> task(multiply);
-    
-    // 2. 获取与该任务关联的 future
-    std::future<int> result = task.get_future();
-    
-    // 3. 将任务交给另一个线程去执行 (或者放进线程池队列)
-    std::thread t(std::move(task), 5, 6);
-    
-    // 4. 获取结果
-    std::cout << "5 * 6 = " << result.get() << std::endl;
-    
-    t.join();
+    try {
+        std::cout << readFirstLine("demo.txt") << std::endl;
+    } catch (const std::exception& ex) {
+        std::cout << "error: " << ex.what() << std::endl;
+        return 1;
+    }
     return 0;
 }
