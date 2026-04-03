@@ -1,13 +1,8 @@
-- 前言
+- 开始
 
-  - [前言](preface/preface.md)
-  - [简介](preface/intro.md)
-  - [语言对照](preface/compare.md)
-
-- 快速开始
-
+  - [前言](start/preface.md)
+  - [语言对照](start/compare.md)
   - [Hello World](start/hello-world.md)
-  - [环境准备](start/env.md)
   - [头文件与构建模型](start/header-and-build.md)
 
 - 基础教程
@@ -16,22 +11,22 @@
   - [基础类型](base/base-type.md)
   - [变量](base/var.md)
   - [常量](base/const.md)
+  - [数组](base/array.md)
+  - [字符串](base/string.md)
   - [修饰符](base/modifier.md)
   - [运算符](base/operator.md)
   - [条件](base/decision.md)
   - [循环](base/loop.md)
+  - [函数](base/func.md)
+  - [时间/日期](base/time.md)
+  - [输入/输出](base/io.md)
 
 - 进阶教程
   - [指针](advanced/pointer.md)
   - [引用](advanced/ref.md)
-  - [字符串](advanced/string.md)
-  - [数组](advanced/array.md)
-  - [函数基础](advanced/func-base.md)
   - [函数进阶](advanced/func-advanced.md)
   - [函数重载](advanced/overload-func.md)
   - [运算符重载](advanced/overload-operator.md)
-  - [时间/日期](advanced/time.md)
-  - [输入/输出](advanced/io.md)
   - [容器/算法/迭代器](advanced/data.md)
 
 - 面向对象
@@ -40,7 +35,6 @@
   - [类和对象](oop/base.md)
   - [继承](oop/inherit.md)
   - [多态](oop/polymorphism.md)
-  - [接口](oop/interface.md)
 
 - 随笔
 
@@ -57,7 +51,5 @@
 
   - [size_t](std/size-t.md)
   - [copy](std/copy.md)
-
-
 
 - [简介](/)
