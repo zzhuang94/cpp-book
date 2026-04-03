@@ -230,44 +230,42 @@ int main() {
 
 这不是因为“基类一定有资源”，而是因为“销毁动作可能发生在只看得到基类接口的地方”。
 
+!> `Base* ptr = new Derived();` 这种写法在现代C++中，作为“拥有所有权”的资源分配方式，是被强烈反感和废弃的。
+
 ----
 
-# `override`
+# override
 
-虽然 `override` 常放在多态章节里讲，但在继承层面它同样非常关键。它能明确表示“这个函数是在覆盖基类虚函数”。
+虽然 `override` 常放在多态章节里讲，但在继承层面它同样非常关键。  
+它能明确表示 *这个函数是在覆盖基类虚函数*。
 
 ```cpp
 class Base {
 public:
-    virtual void run() const {
-    }
+    virtual void run() const {}
 };
 
 class Derived : public Base {
 public:
-    void run() const override {
-    }
+    void run() const override {}
 };
 ```
 
 如果函数签名不匹配，编译器会直接报错，这比旧时代“悄悄没覆盖成功”安全得多。
 
-## 为什么继承体系里要把它当默认写法
+> 继承体系里要把它当默认写法  
 
 继承一旦涉及虚函数，最怕的就是“看起来像重写，实际上只是新增了一个同名函数”。  
 `override` 可以让这种错误在编译期暴露，而不是拖到运行时行为异常才发现。
 
-所以一个很稳的习惯是：
+所以一个很稳的习惯是：**只要你是想覆盖基类虚函数，就始终写上 `override`**
 
-- 只要你是想覆盖基类虚函数
-- 就始终写上 `override`
-
-## 覆盖和同名隐藏不是一回事
+> 覆盖和同名隐藏不是一回事
 
 这是继承里非常容易混淆的一点。
 
-如果基类函数不是虚函数，或者派生类函数签名不同，那么你写出一个同名函数，并不代表真正“覆盖”了基类行为。  
-很多时候它只是把基类里的同名函数隐藏了。
+> 如果基类函数不是虚函数，或者派生类函数签名不同，那么你写出一个同名函数，并不代表真正“覆盖”了基类行为。  
+> 很多时候它只是把基类里的同名函数隐藏了。
 
 所以判断标准不是“名字像不像”，而是：
 
@@ -277,9 +275,9 @@ public:
 
 ----
 
-# `final`
+# final
 
-`C++11` 支持禁止进一步继承：
+`C++11` 支持禁止类被继承：
 
 ```cpp
 class Base final {
@@ -291,57 +289,41 @@ class Base final {
 ```cpp
 class Base {
 public:
-    virtual void run() final {
-    }
+    virtual void run() final {}
 };
 ```
 
-## 它在设计上表达了什么
-
-`final` 的价值不只是“防止别人继续写子类”，更是在表达设计边界：
+> `final` 的价值不只是“防止别人继续写子类”，更是在表达设计边界：
 
 - 这个类型的继承层次到这里结束
 - 这个虚函数的行为不希望再被派生类改写
 
-当一个类的扩展边界已经稳定，或者继续继承会破坏语义时，`final` 是很直接的表达方式。
+> 当一个类的扩展边界已经稳定，或者继续继承会破坏语义时，`final` 是很直接的表达方式。
 
 ----
 
 # 继承与组合
 
-接手现代项目时，经常会看到“组合优于继承”的建议。原因不是继承不好，而是它容易导致：
-
+现代项目中，经常会看到 `组合优于继承` 的建议。原因不是继承不好，而是它容易导致：
 - 层次过深
 - 基类职责膨胀
 - 派生类过度依赖基类实现细节
 - 修改一个基类影响大量子类
 
-如果两个类只是“使用关系”而非真正的“是一种”，优先考虑组合。
+如果两个类只是 `使用关系` 而非真正的 `是一种`，优先考虑组合。
 
-## 先问是不是 `is-a`
-
-一个实用判断方式是先问：
-
+> 是不是 `is-a`, 一个实用判断方式是先问：
 - 这个派生类是否真的能被自然地当成基类使用
 - 这种关系是否稳定，而不是暂时凑巧
 - 我想复用的是语义，还是只是几段实现代码
 
-如果答案更接近“只是想复用一点能力”，那通常组合会更合适。
-
-例如：
-
+如果答案更接近“只是想复用一点能力”，那通常组合会更合适。例如：
 - `UserService` 有一个 `Logger`
 - `OrderProcessor` 有一个 `Storage`
 
 这类关系通常不是继承，而是依赖或组合。
 
-## 一个很实用的判断口诀
-
-可以把这个判断压缩成一句话：
-
-> **想表达“是一个”，再考虑继承；想表达“有一个”或“用一个”，优先组合。**
-
-例如：
+> 想表达“是一个”，再考虑继承；想表达“有一个”或“用一个”，优先组合。
 
 - `Dog` 是一个 `Animal`
 - `Car` 有一个 `Engine`
@@ -359,24 +341,18 @@ public:
 
 class Animal {
 public:
-    explicit Animal(const std::string& name) : name_(name) {
-    }
-
+    explicit Animal(const std::string& name) : name_(name) {}
     virtual ~Animal() = default;
-
     virtual void speak() const {
         std::cout << "animal" << std::endl;
     }
-
 protected:
     std::string name_;
 };
 
 class Dog : public Animal {
 public:
-    explicit Dog(const std::string& name) : Animal(name) {
-    }
-
+    explicit Dog(const std::string& name) : Animal(name) {}
     void speak() const override {
         std::cout << name_ << " says woof" << std::endl;
     }
