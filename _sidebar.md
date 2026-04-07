@@ -42,6 +42,9 @@
 
   - [代码组织](engineering/code.md)
   - [编译与链接](engineering/build.md)
+  - [构建工具](engineering/build-tool.md)
+  - [CMake 实战](engineering/cmake.md)
+  - [第三方库与依赖管理](engineering/dependency.md)
 
 - 随笔
 
