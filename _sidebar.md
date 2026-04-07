@@ -38,6 +38,11 @@
   - [继承](oop/inherit.md)
   - [多态](oop/polymorphism.md)
 
+- 工程实践
+
+  - [代码组织](engineering/code.md)
+  - [编译与链接](engineering/build.md)
+
 - 随笔
 
   - [几种初始化](note/init.md)
