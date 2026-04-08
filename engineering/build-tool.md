@@ -1,7 +1,7 @@
 # 构建工具
 
 > 当 `C++` 项目只有一个文件时，手敲一条编译命令还不算痛苦。  
-> 但只要文件一多、依赖一多、平台一多，**“怎么稳定地把项目构建出来”** 就会迅速变成一门单独的工程能力。
+> 但只要文件一多、依赖一多、平台一多，*“怎么稳定地把项目构建出来”* 就会迅速变成一门单独的工程能力。
 
 很多刚入门的读者会有类似困惑：
 
@@ -11,25 +11,14 @@
 - 为什么有些项目让我执行 `make`，有些项目让我先 `cmake ..` 再 `make`
 - 为什么换一台机器，同样的项目就构建失败
 
-这些问题都很正常。  
-因为在 `C++` 里，**编译器负责把代码翻译成目标程序，而构建工具负责管理“该编哪些文件、以什么顺序编、依赖怎么组织、库怎么接进来”**。
-
-这篇文档把读者默认当作零基础来介绍。你会看到：
-
-- 什么是构建工具，为什么不能只靠手写编译命令
-- `make` 的核心思想：目标、依赖、规则
-- `Makefile` 最基础的写法和常见概念
-- `cmake` 的定位、它与 `make` 的关系
-- 如何用 `CMakeLists.txt` 从零构建一个小型项目
-- 开发过程中的常见坑和实践建议
+> 编译器负责把代码翻译成目标程序  
+> 而构建工具负责管理 `该编哪些文件、以什么顺序编、依赖怎么组织、库怎么接进来`
 
 ----
 
-# 先回答一个根本问题
+# 什么是构建
 
-## 什么是构建
-
-“构建（build）” 不是单指“编译”。
+> “构建（build）” 不是单指“编译”。
 
 在真实项目里，构建通常包括：
 
@@ -41,17 +30,9 @@
 - 运行测试
 - 有时还包括打包、安装、部署
 
-所以“构建工具”不是在替代编译器，而是在**组织整个构建流程**。
+> “构建工具”不是在替代编译器，而是在 *组织整个构建流程*。
 
-## 为什么不能一直手写命令
-
-假设项目一开始只有一个文件：
-
-```bash
-g++ main.cpp -o app
-```
-
-这没问题。
+假设项目一开始只有一个文件: `g++ main.cpp -o app` 这没问题。
 
 但项目很快可能会变成这样：
 
@@ -91,7 +72,7 @@ g++ main.cpp logger.cpp math.cpp net.cpp -o app
 
 ----
 
-# 构建工具和编译器的关系
+# 构建工具和编译器
 
 > 一个非常重要的区分：`make` 和 `cmake` 都不是编译器。
 
@@ -111,20 +92,17 @@ g++ main.cpp logger.cpp math.cpp net.cpp -o app
 
 ----
 
-# 为什么会有 `make`
+# Make
 
-> `make` 的核心目标，是解决“哪些东西需要重新生成”这个问题。
+> `make` 的核心目标，是解决 *哪些东西需要重新生成* 这个问题。
 
-在大型项目里，如果你每改一个文件就把整个工程全部重编译，会非常慢。  
-`make` 的思路是：
+在大型项目里，如果你每改一个文件就把整个工程全部重编译，会非常慢。`make` 的思路是：
 
 - 先描述目标和依赖关系
 - 再根据文件时间戳判断哪些内容过期了
 - 只执行必要的那部分命令
 
-这就是 `make` 最经典的价值：**增量构建**。
-
-## `make` 的核心思想
+> 这就是 `make` 最经典的价值：**增量构建**。
 
 你只需要先理解三个词：
 
@@ -132,28 +110,7 @@ g++ main.cpp logger.cpp math.cpp net.cpp -o app
 - `dependency`：依赖，也就是目标依赖哪些文件
 - `rule`：规则，也就是如何从依赖生成目标
 
-一个最经典的 `Makefile` 规则长这样：
-
-```make
-app: main.o logger.o
-	g++ main.o logger.o -o app
-```
-
-意思是：
-
-- 目标是 `app`
-- 它依赖 `main.o` 和 `logger.o`
-- 如果要生成 `app`，就执行后面那条命令
-
-如果 `main.o` 或 `logger.o` 比 `app` 更新，`make` 就会重新执行这条规则。
-
-----
-
-# Make 是什么
-
-## 一个最小例子
-
-先看一个非常小的项目：
+## 最小示例
 
 ```text
 project/
@@ -211,11 +168,9 @@ clean:
 	rm -f app main.o math.o
 ```
 
-## 这份 Makefile 在做什么
+!> **注意：命令前面必须使用 `Tab 字符`，而不能是空格。**
 
-它定义了四件事：
-
-### 1. 如何生成最终程序
+### Makefile 解读
 
 ```make
 app: main.o math.o
@@ -224,8 +179,6 @@ app: main.o math.o
 
 只要 `app` 不存在，或者 `main.o` / `math.o` 更新了，就重新链接。
 
-### 2. 如何生成 `main.o`
-
 ```make
 main.o: main.cpp math.h
 	g++ -c main.cpp -o main.o
@@ -233,21 +186,21 @@ main.o: main.cpp math.h
 
 只要 `main.cpp` 或 `math.h` 变了，就重新编译 `main.o`。
 
-### 3. 如何生成 `math.o`
-
 ```make
 math.o: math.cpp math.h
 	g++ -c math.cpp -o math.o
 ```
 
-### 4. 如何清理构建产物
+只要 `math.cpp` 变了，就重新编译 `math.o`。
 
 ```make
 clean:
 	rm -f app main.o math.o
 ```
 
-## 怎么使用
+清理构建产物
+
+### 使用方法
 
 最常见的命令：
 
@@ -264,11 +217,31 @@ make clean
 make app
 ```
 
+## 优点和局限
+
+### 优点
+
+- 概念直接
+- 对小项目非常够用
+- 增量构建思路清晰
+- 在 Unix/Linux 环境中很常见
+- 许多底层项目和老项目仍大量使用
+
+### 局限
+
+`make` 很强，但它的问题也很现实：
+
+- 语法不够现代
+- 跨平台体验一般
+- 手工维护依赖关系容易出错
+- 大项目的 `Makefile` 容易越来越难读
+- 第三方库和复杂工程配置管理不够友好
+
+换句话说，`make` 很适合帮助你理解“构建是什么”，但在现代跨平台工程里，它常常不再是最高层选择。
+
 ----
 
-# Makefile 的基本语法
-
-## 规则的基本形式
+# Makefile 配置详解
 
 一条规则通常长这样：
 
@@ -281,9 +254,7 @@ target: dependencies
 
 - `target` 在冒号左边
 - `dependencies` 在冒号右边
-- 下一行命令前面必须是 **Tab**，不是空格
-
-这个 “Tab” 是 `Makefile` 最经典的新手坑之一。
+- **下一行命令前面必须是 `Tab`，不是空格**
 
 ## 变量
 
@@ -309,7 +280,7 @@ math.o: math.cpp math.h
 - 编译选项集中管理
 - 项目更清晰
 
-## 伪目标 `.PHONY`
+## 伪目标 .PHONY
 
 像 `clean` 这样的目标，并不是真的去生成一个叫 `clean` 的文件。  
 这种目标通常应该声明为伪目标：
@@ -321,9 +292,7 @@ clean:
 	rm -f app main.o math.o
 ```
 
-为什么需要这个？
-
-因为如果当前目录下刚好真的有个文件叫 `clean`，`make clean` 可能会误以为目标已经“最新”，从而不执行命令。
+> 如果当前目录下刚好真的有个文件叫 `clean`，`make clean` 可能会误以为目标已经“最新”，从而不执行命令。
 
 ## 自动变量
 
@@ -374,33 +343,9 @@ math.o: math.cpp math.h
 
 ----
 
-# Make 的优点和局限
+# CMake
 
-## 优点
-
-- 概念直接
-- 对小项目非常够用
-- 增量构建思路清晰
-- 在 Unix/Linux 环境中很常见
-- 许多底层项目和老项目仍大量使用
-
-## 局限
-
-`make` 很强，但它的问题也很现实：
-
-- 语法不够现代
-- 跨平台体验一般
-- 手工维护依赖关系容易出错
-- 大项目的 `Makefile` 容易越来越难读
-- 第三方库和复杂工程配置管理不够友好
-
-换句话说，`make` 很适合帮助你理解“构建是什么”，但在现代跨平台工程里，它常常不再是最高层选择。
-
-----
-
-# 为什么会有 CMake
-
-> `cmake` 不是 `make` 的替代品那么简单，它更像是“生成构建系统的工具”。
+> `cmake` 不是 `make` 的替代品那么简单，它更像是 *生成构建系统的工具*。
 
 很多初学者第一次看到：
 
@@ -409,8 +354,7 @@ cmake -S . -B build
 cmake --build build
 ```
 
-会误以为 `cmake` 就是在直接编译代码。  
-更准确地说，`cmake` 通常分两步工作：
+会误以为 `cmake` 就是在直接编译代码。更准确地说，`cmake` 通常分两步工作：
 
 1. 读取 `CMakeLists.txt`
 2. 为当前平台生成合适的构建系统
@@ -422,9 +366,9 @@ cmake --build build
 - Visual Studio 工程
 - Xcode 工程
 
-也就是说，`cmake` 更像是**构建系统生成器（build system generator）**。
+> 也就是说，`cmake` 更像是 *构建系统生成器（build system generator）*。
 
-## 它为什么流行
+## 流行原因
 
 因为真实工程往往有这些需求：
 
@@ -435,11 +379,8 @@ cmake --build build
 - 统一编译选项
 
 如果全部靠手写 `Makefile` 来兼顾这些需求，工作量会迅速上升。  
-`cmake` 的价值就在于：**用更抽象的方式描述项目，再让它生成具体平台上的构建文件。**
 
-----
-
-# CMake 是什么
+> `cmake` 的价值就在于：*用更抽象的方式描述项目，再让它生成具体平台上的构建文件。*
 
 ## 最小示例
 
@@ -476,7 +417,7 @@ add_executable(app
 - 生成一个叫 `app` 的可执行文件
 - 这个目标由哪些源文件组成
 
-## 如何构建
+### 如何构建
 
 常见做法是使用单独的 `build/` 目录：
 
@@ -512,179 +453,148 @@ cmake --build build
 
 ----
 
-# CMakeLists.txt 的核心概念
+# CMakeLists.txt 配置详解
 
-## 1. `project()`
+> `CMake` 的很多命令看起来像“函数调用”，其实是在 *声明一个构建目标的属性和依赖关系*。
+
+如果只记住“这行能跑”，但不知道参数分别代表什么、会影响谁、是否会向下游传递，到了真实项目里就很容易改不动。
+
+下面按“真实项目使用频率”来梳理。
+
+## 最常见的命令
+
+### 声明 CMake 最小版本： cmake_minimum_required()
+
+```cmake
+cmake_minimum_required(VERSION 3.16)
+```
+
+作用是声明：这个项目要求的最低 `CMake` 版本是多少。
+
+这里的参数含义是：
+
+- `VERSION`：后面跟的是最低版本号
+- `3.16`：表示低于这个版本的 `CMake` 不应该用来配置这个项目
+
+为什么它重要？
+
+- 不同版本 `CMake` 的特性不同
+- 一些现代写法依赖较新的行为
+- 先把最低版本说清楚，能减少“同样的脚本在别人机器上失效”的问题
+
+它通常放在 `CMakeLists.txt` 的最前面。
+
+### 声明项目信息： project()
+
+```cmake
+project(MyProject VERSION 1.0 LANGUAGES CXX)
+```
+
+它声明项目的基本信息。
+
+常见参数含义：
+
+- `MyProject`：项目名
+- `VERSION 1.0`：项目版本
+- `LANGUAGES CXX`：这个项目主要使用 `C++`
+
+最小形式也可以只写：
 
 ```cmake
 project(MyProject)
 ```
 
-它声明项目信息。  
-一般至少会写项目名，有时也会写版本、语言等信息。
+但真实项目里写清版本和语言通常更规范。
 
-## 2. `set()`
+### 设置变量： set()
 
 ```cmake
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 ```
 
-用来设置变量。  
-对初学者来说，最常见的是设置：
+`set()` 的作用非常通用，本质上是在设置变量。
 
-- `CMAKE_CXX_STANDARD`
-- 编译选项
-- 路径变量
+这两行里每个字段的含义是：
 
-## 3. `add_executable()`
+- `CMAKE_CXX_STANDARD`：一个 `CMake` 变量名
+- `17`：把这个变量设置为 `17`
+
+它表达的目标是：
+
+- 希望当前项目使用 `C++17`
+
+第二行：
+
+- `CMAKE_CXX_STANDARD_REQUIRED`：表示这个标准是不是“必须满足”
+- `ON`：要求编译器必须支持这个标准，而不是自动降级
+
+对初学者来说，`set()` 最常见的用途有三种：
+
+- 设置语言标准
+- 设置一些开关变量
+- 保存路径、输出目录等配置
+
+不过要注意，`set()` 是 **变量级别** 的配置，而现代 `CMake` 更提倡把很多属性挂到具体 target 上。
+
+### 定义一个可执行目标： add_executable()
 
 ```cmake
 add_executable(app main.cpp math.cpp)
 ```
 
-表示定义一个可执行目标。
+它的作用是定义一个可执行目标。
 
-## 4. `add_library()`
+这里的参数可以逐个理解：
 
-```cmake
-add_library(mathlib STATIC math.cpp)
-```
+- `app`：目标名
+- `main.cpp math.cpp`：组成这个目标的源文件列表
 
-表示定义一个库目标。  
-常见类型包括：
+它表达的目标是：
 
-- `STATIC`
-- `SHARED`
+- 生成一个叫 `app` 的可执行程序
+- 这个程序由 `main.cpp` 和 `math.cpp` 一起编译、链接而成
 
-例如：
+在真实项目里更常见的写法通常会分行写，便于维护：
 
 ```cmake
-add_library(mathlib STATIC math.cpp)
-add_executable(app main.cpp)
-target_link_libraries(app PRIVATE mathlib)
-```
-
-这表示：
-
-- 先把 `math.cpp` 构建成静态库 `mathlib`
-- 再构建 `app`
-- 让 `app` 链接 `mathlib`
-
-## 5. `target_include_directories()`
-
-如果头文件不在当前默认搜索路径里，可以这样指定：
-
-```cmake
-target_include_directories(app PRIVATE include)
-```
-
-这表示 `app` 构建时需要把 `include/` 作为头文件搜索目录。
-
-## 6. `target_link_libraries()`
-
-这是 `CMake` 中非常重要的一条命令：
-
-```cmake
-target_link_libraries(app PRIVATE mathlib)
-```
-
-它表示：
-
-- `app` 需要链接 `mathlib`
-
-这个命令也经常用于链接第三方库。
-
-## 7. `PRIVATE / PUBLIC / INTERFACE`
-
-这是 `CMake` 里非常关键，但初学者一开始最容易迷糊的概念。
-
-可以先这样粗略理解：
-
-- `PRIVATE`：只对当前目标自己生效
-- `PUBLIC`：对当前目标生效，也会传递给依赖它的目标
-- `INTERFACE`：当前目标自己不用，但依赖它的目标要用
-
-例如：
-
-```cmake
-target_include_directories(mathlib PUBLIC include)
-```
-
-这表示：
-
-- `mathlib` 自己需要 `include/`
-- 链接 `mathlib` 的其他目标，也会继承这个头文件路径
-
-这是现代 `CMake` 的核心思想之一：  
-**把依赖和属性挂到具体 target 上，而不是到处写全局配置。**
-
-----
-
-# 一个更像真实项目的 CMake 例子
-
-目录结构：
-
-```text
-project/
-├── CMakeLists.txt
-├── include/
-│   └── math.h
-└── src/
-    ├── main.cpp
-    └── math.cpp
-```
-
-头文件：
-
-```cpp
-// include/math.h
-#ifndef MATH_H
-#define MATH_H
-
-int add(int a, int b);
-
-#endif
-```
-
-实现：
-
-```cpp
-// src/math.cpp
-#include "math.h"
-
-int add(int a, int b) {
-    return a + b;
-}
-```
-
-主程序：
-
-```cpp
-// src/main.cpp
-#include <iostream>
-#include "math.h"
-
-int main() {
-    std::cout << add(1, 2) << "\n";
-    return 0;
-}
-```
-
-对应的 `CMakeLists.txt`：
-
-```cmake
-cmake_minimum_required(VERSION 3.10)
-project(MyProject)
-
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-add_library(mathlib STATIC
+add_executable(app
+    src/main.cpp
     src/math.cpp
 )
+```
 
-target_include_directories(mathlib PUBLIC
-    include
+### 构建库： add_library()
+
+```cmake
+add_library(mathlib STATIC math.cpp)
+```
+
+这一行一定要彻底看懂，因为它是很多工程拆分的基础。
+
+参数含义如下：
+
+- `mathlib`：目标名，也就是这个库在 `CMake` 里的名字
+- `STATIC`：库类型，表示静态库
+- `math.cpp`：这个库由哪些源文件构成
+
+这行命令实现的目标是：
+
+- 把 `math.cpp` 先编译成一个独立的库目标
+- 这个库目标名字叫 `mathlib`
+- 库的形态是静态库，后续其他目标可以链接它
+
+常见库类型包括：
+
+- `STATIC`：静态库，链接时直接并入最终产物
+- `SHARED`：动态库，运行时通常需要配套的 `.so` / `.dll`
+- `INTERFACE`：接口库，不生成真正的二进制文件，只用来传递头文件路径、宏、编译选项等属性
+
+例如：
+
+```cmake
+add_library(mathlib STATIC
+    src/math.cpp
 )
 
 add_executable(app
@@ -696,18 +606,442 @@ target_link_libraries(app PRIVATE
 )
 ```
 
-这份配置已经体现了现代 `CMake` 的基本风格：
+这几行组合起来的含义是：
 
-- 先定义目标
-- 再把头文件路径、链接关系等属性挂到目标上
+- 先把 `src/math.cpp` 构建成静态库 `mathlib`
+- 再构建可执行程序 `app`
+- `app` 链接 `mathlib`
+
+这就是库与可执行程序之间最基本的工程关系。
+
+### 给目标添加头文件搜索路径： target_include_directories()
+
+```cmake
+target_include_directories(app PRIVATE include)
+```
+
+这条命令的作用是：给某个目标添加头文件搜索路径。
+
+参数含义：
+
+- `app`：这个配置作用到哪个目标上
+- `PRIVATE`：只对 `app` 自己生效，不向依赖它的其他目标传递
+- `include`：要加入的头文件搜索目录
+
+它实现的目标是：
+
+- 当编译 `app` 时，编译器会额外去 `include/` 目录里找头文件
+
+如果你写的是：
+
+```cmake
+target_include_directories(mathlib PUBLIC include)
+```
+
+那意思就变成：
+
+- `mathlib` 自己编译时需要 `include/`
+- 任何链接 `mathlib` 的目标，也会自动继承这个头文件路径
+
+> 这在库项目里非常常见，因为库的头文件通常就是要暴露给使用者的。
+
+### 构建链接关系： target_link_libraries()
+
+```cmake
+target_link_libraries(app PRIVATE mathlib)
+```
+
+> 这是 `CMake` 中最重要的命令之一。
+
+参数含义：
+
+- `app`：要链接谁
+- `PRIVATE`：这条链接关系只对 `app` 自己生效
+- `mathlib`：被链接的库目标
+
+它实现的目标是：
+
+- 告诉 `CMake`，构建 `app` 时需要把 `mathlib` 一起链接进来
+
+如果这里链接的是第三方库，写法也类似：
+
+```cmake
+target_link_libraries(app PRIVATE fmt::fmt)
+```
+
+这里的 `fmt::fmt` 往往是第三方库导出的 target 名，而不是文件路径。
+
+### PRIVATE / PUBLIC / INTERFACE
+
+> 这是现代 `CMake` 的核心概念之一，可以理解成“一个属性是否向外传播”。
+
+- `PRIVATE`：当前目标自己使用，不向外传递
+- `PUBLIC`：当前目标使用，也向依赖它的目标传递
+- `INTERFACE`：当前目标自己不用，但向依赖它的目标传递
+
+最容易理解的例子是头文件路径：
+
+```cmake
+target_include_directories(mathlib PUBLIC include)
+```
+
+意思是：
+
+- `mathlib` 自己需要这个头文件目录
+- 任何链接 `mathlib` 的目标，也需要这个头文件目录
+
+而下面这种通常更适合“只在库内部使用的实现细节目录”：
+
+```cmake
+target_include_directories(mathlib PRIVATE src)
+```
+
+这表示：
+
+- `src/` 只是 `mathlib` 内部实现需要
+- 外部使用者不应该看到这个路径
+
+这就是现代 `CMake` 的核心思想：**把依赖、头文件、宏、编译选项都挂到具体 target 上，并且明确它们是否传播。**
+
+## 真实项目里高频命令
+
+### 子目录构建： add_subdirectory()
+
+```cmake
+add_subdirectory(src)
+add_subdirectory(tests)
+```
+
+作用是把子目录里的 `CMakeLists.txt` 纳入当前构建。
+
+真实项目常用它来做两件事：
+
+- 拆分大型工程
+- 把第三方库源码作为子目录引入
+
+例如：
+
+```cmake
+add_subdirectory(third_party/spdlog)
+target_link_libraries(app PRIVATE spdlog::spdlog)
+```
+
+这表示：
+
+- `spdlog` 的源码也参加当前工程构建
+- `app` 链接它导出的目标
+
+### 补充源文件： target_sources()
+
+```cmake
+target_sources(app PRIVATE
+    src/main.cpp
+    src/app.cpp
+)
+```
+
+作用是给一个已经存在的 target 继续补充源文件。
+
+它适合：
+
+- 先定义目标，再分阶段添加源文件
+- 在不同平台下给同一个目标追加不同文件
+
+### 给目标添加预处理宏： target_compile_definitions()
+
+```cmake
+target_compile_definitions(app PRIVATE DEBUG_MODE=1)
+```
+
+作用是给目标添加预处理宏。
+
+它相当于为这个目标增加类似：
+
+```bash
+-DDEBUG_MODE=1
+```
+
+的编译参数。
+
+真实项目里常用来控制：
+
+- Debug / Release 行为
+- 平台分支
+- 特性开关
+
+### 为目标添加编译器选项： target_compile_options()
+
+```cmake
+target_compile_options(app PRIVATE -Wall -Wextra)
+```
+
+作用是为目标添加编译器选项。
+
+常见用途：
+
+- 打开警告
+- 开启更严格的诊断
+- 为某个特定目标定制编译参数
+
+注意它更偏“编译器参数层面”，而不是“项目逻辑层面”。
+
+### 声明这个目标需要哪些语言特性： target_compile_features()
+
+```cmake
+target_compile_features(app PRIVATE cxx_std_17)
+```
+
+它的作用是声明这个目标需要哪些语言特性。
+
+相较于直接硬写编译器参数，这种方式更符合 `CMake` 的抽象思路，因为你描述的是“需要 `C++17` 能力”，而不是“强行传某个平台的某个开关”。
+
+### 定义一个布尔开关： option()
+
+```cmake
+option(BUILD_TESTS "Build unit tests" ON)
+```
+
+作用是定义一个布尔开关，方便用户在配置阶段选择是否启用某项功能。
+
+真实项目中非常常见，例如：
+
+- 是否构建测试
+- 是否启用示例程序
+- 是否打开日志
+- 是否使用某个可选依赖
+
+### find_package()
+
+```cmake
+find_package(fmt REQUIRED)
+```
+
+这是接第三方库时最常见的一条命令。
+
+参数含义：
+
+- `fmt`：要查找的包名
+- `REQUIRED`：如果找不到就直接报错，停止配置
+
+它实现的目标是：
+
+- 让 `CMake` 去当前环境里寻找 `fmt`
+- 如果找到，就导入它提供的 target、头文件、库信息
+
+后面通常会配合：
+
+```cmake
+target_link_libraries(app PRIVATE fmt::fmt)
+```
+
+这表示：
+
+- 不是手动写 `.lib` 或 `.so` 路径
+- 而是直接使用这个包导出的 `CMake target`
+
+这也是现代 `CMake` 推荐的第三方库接入方式。
+
+### 定义“安装规则”： install()
+
+```cmake
+install(TARGETS app DESTINATION bin)
+```
+
+作用是定义“安装规则”。
+
+它不是在编译时马上执行，而是在你运行安装步骤时告诉 `CMake`：
+
+- 可执行文件放到哪里
+- 库放到哪里
+- 头文件放到哪里
+
+如果项目需要发布、打包或给别人复用，这一步很常见。
+
+### 测试相关： enable_testing() / add_test()
+
+```cmake
+enable_testing()
+add_test(NAME app_test COMMAND app_test)
+```
+
+这组命令用于测试。
+
+作用分别是：
+
+- `enable_testing()`：启用测试支持
+- `add_test()`：注册一条测试命令
+
+如果项目里已经引入了 `GoogleTest`、`Catch2` 之类的框架，这两条通常都会出现。
+
+## 第三方库接入
+
+### 方式一：系统或包管理器已安装，用 find_package()
+
+这是最常见、也最推荐的方式。
+
+```cmake
+find_package(fmt REQUIRED)
+
+add_executable(app src/main.cpp)
+target_link_libraries(app PRIVATE fmt::fmt)
+```
+
+整个流程的意思是：
+
+- 先找到 `fmt`
+- 再把 `fmt::fmt` 链接到 `app`
+- `fmt` 所需要的头文件路径、库路径、编译属性通常会自动传递过来
+
+这也是为什么现代 `CMake` 里经常看不到显式写 `include_directories()`，因为很多信息已经由库自己的 target 携带了。
+
+### 方式二：第三方库源码放在仓库里，用 add_subdirectory()
+
+```cmake
+add_subdirectory(third_party/spdlog)
+
+add_executable(app src/main.cpp)
+target_link_libraries(app PRIVATE spdlog::spdlog)
+```
+
+这适用于：
+
+- 依赖库本身支持 `CMake`
+- 你希望它和主项目一起构建
+- 团队希望减少“本机先装依赖”的步骤
+
+### 方式三：配置阶段自动下载，用 FetchContent
+
+```cmake
+include(FetchContent)
+
+FetchContent_Declare(
+    fmt
+    GIT_REPOSITORY https://github.com/fmtlib/fmt.git
+    GIT_TAG 10.2.1
+)
+
+FetchContent_MakeAvailable(fmt)
+
+target_link_libraries(app PRIVATE fmt::fmt)
+```
+
+这适用于：
+
+- 想降低新机器搭环境的门槛
+- 希望项目配置时自动拉依赖
+
+但对初学者来说，要先把 `find_package()` 和 `add_subdirectory()` 看明白，再接触 `FetchContent` 会更稳。
+
+## 完整例子
+
+目录结构：
+
+```text
+project/
+├── CMakeLists.txt
+├── include/
+│   └── math.h
+├── src/
+│   ├── main.cpp
+│   └── math.cpp
+└── tests/
+    ├── CMakeLists.txt
+    └── test_math.cpp
+```
+
+对应的顶层 `CMakeLists.txt`：
+
+```cmake
+cmake_minimum_required(VERSION 3.16)
+project(MyProject VERSION 1.0 LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+option(BUILD_TESTS "Build unit tests" ON)
+
+add_library(mathlib STATIC
+    src/math.cpp
+)
+
+target_include_directories(mathlib PUBLIC
+    include
+)
+
+target_compile_features(mathlib PUBLIC cxx_std_17)
+
+add_executable(app
+    src/main.cpp
+)
+
+target_link_libraries(app PRIVATE
+    mathlib
+)
+
+if(BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
+endif()
+```
+
+`tests/CMakeLists.txt` 可以写成：
+
+```cmake
+add_executable(mathlib_test
+    test_math.cpp
+)
+
+target_link_libraries(mathlib_test PRIVATE
+    mathlib
+)
+
+add_test(NAME mathlib_test COMMAND mathlib_test)
+```
+
+这里的含义是：
+
+- 生成一个测试程序 `mathlib_test`
+- 这个测试程序链接主工程里的 `mathlib`
+- 再把它注册成一条可以由 `ctest` 执行的测试
+
+最小的 `tests/test_math.cpp` 可以写成：
+
+```cpp
+#include "math.h"
+#include <cassert>
+
+int main() {
+    assert(add(1, 2) == 3);
+    return 0;
+}
+```
+
+这个例子虽然简单，但已经把测试子目录的最基本结构说明白了：
+
+- 顶层 `CMakeLists.txt` 决定是否启用测试
+- `tests/CMakeLists.txt` 负责定义测试目标
+- `add_test()` 负责把测试目标接入 `CTest`
+
+这份配置里，几个关键点分别是：
+
+- `cmake_minimum_required()`：约束 `CMake` 版本
+- `project()`：声明项目名、版本和语言
+- `set()`：指定 `C++17`
+- `option()`：定义是否构建测试的开关
+- `add_library()`：把功能代码抽成库
+- `target_include_directories()`：暴露库的头文件目录
+- `target_compile_features()`：声明语言能力要求
+- `add_executable()`：定义最终程序
+- `target_link_libraries()`：把程序和库连接起来
+- `add_subdirectory()`：在需要时引入测试子目录
+
+如果你把这一套理解透，已经足够读懂很多真实项目的 `CMakeLists.txt` 了。
 
 ----
 
 # Make 和 CMake 的关系
 
-> 它们不是简单的“二选一”，而是处在不同层次。
-
-可以这样理解：
+> 它们不是简单的 *二选一*，而是处在不同层次。
 
 - `make` 是一个具体的构建执行工具
 - `cmake` 是一个生成构建系统的工具
@@ -722,7 +1056,7 @@ target_link_libraries(app PRIVATE
 
 ## 一个形象比喻
 
-你可以把它们类比成：
+可以把它们类比成：
 
 - `cmake`：项目经理，先出施工图
 - `make`：施工队，按图纸实际干活
@@ -730,7 +1064,7 @@ target_link_libraries(app PRIVATE
 
 这个比喻不完全精确，但对初学者很有帮助。
 
-## 现代实践里更推荐什么
+## 最佳实践
 
 对现代跨平台 `C++` 项目来说，通常更推荐：
 
@@ -744,69 +1078,11 @@ target_link_libraries(app PRIVATE
 
 ----
 
-# 初学者最常见的问题
+# 注意事项
 
-## 1. 把 `cmake` 当成编译器
+### 1. 构建脚本也是项目源码的一部分
 
-不是。  
-`cmake` 更像“生成构建方案”的工具，真正的编译工作仍由编译器完成。
-
-## 2. 以为 `make` 只能用于 C++
-
-也不是。  
-`make` 本质上是一个通用规则执行工具，只是经常被用在 `C/C++` 项目中。
-
-## 3. 不理解源码目录和构建目录分离
-
-初学者很容易直接在源码目录执行一堆构建命令，结果目录里到处都是：
-
-- `.o`
-- 可执行文件
-- 中间缓存
-- 自动生成文件
-
-更推荐的做法是：
-
-```bash
-cmake -S . -B build
-cmake --build build
-```
-
-把生成物都放在 `build/`。
-
-## 4. 只会“复制命令”，不会读错误
-
-构建工具报错时，不要只盯着最后一行。  
-要学会区分：
-
-- 配置错误
-- 编译错误
-- 链接错误
-- 运行时错误
-
-例如：
-
-- `fatal error: xxx.h: No such file or directory`：通常是头文件路径问题
-- `undefined reference to ...`：通常是链接问题
-- `No rule to make target ...`：通常是 `Makefile` 依赖或路径问题
-
-## 5. 不知道应该从哪里学起
-
-很实用的学习顺序是：
-
-1. 先手写一条最简单的 `g++` 编译命令
-2. 理解一个小型 `Makefile` 的目标、依赖、规则
-3. 再学最小 `CMakeLists.txt`
-4. 再理解库、头文件目录、链接关系
-5. 最后再接触测试、安装、第三方依赖这些进阶内容
-
-----
-
-# 开发过程中的注意点
-
-## 1. 构建脚本也是项目源码的一部分
-
-很多初学者只重视 `.cpp/.h`，却把 `Makefile`、`CMakeLists.txt` 当成“附属配置”。  
+很多初学者只重视 `.cpp/.h`，却把 `Makefile`、`CMakeLists.txt` 当成 *附属配置*。  
 实际上它们决定了项目能不能被别人正确构建出来。
 
 所以构建脚本也应当：
@@ -816,7 +1092,7 @@ cmake --build build
 - 命名清晰
 - 尽量少写魔法逻辑
 
-## 2. 不要把所有配置写成全局
+### 2. 不要把所有配置写成全局
 
 尤其在 `CMake` 中，现代实践更推荐：
 
@@ -826,7 +1102,7 @@ cmake --build build
 
 因为 target 级配置更清楚地表达了“谁依赖谁”。
 
-## 3. 头文件路径和链接库是两回事
+### 3. 头文件路径和链接库是两回事
 
 很多人第一次接第三方库时会犯这个错：
 
@@ -837,7 +1113,7 @@ cmake --build build
 - 是否正确链接库
 - 动态库运行时是否能被找到
 
-## 4. Debug 和 Release 要分开看
+#$# 4. Debug 和 Release 要分开看
 
 不同构建类型可能意味着：
 
@@ -848,7 +1124,7 @@ cmake --build build
 
 所以不要拿 Debug 通过就直接等价成 Release 没问题。
 
-## 5. 构建目录坏了就敢于重建
+### 5. 构建目录坏了就敢于重建
 
 这是非常实用的经验：
 
@@ -865,7 +1141,7 @@ cmake --build build
 
 当然，在 Windows 上命令形式会不同，但思路一样。
 
-## 6. 先让流程简单可解释，再追求高级技巧
+### 6. 先让流程简单可解释，再追求高级技巧
 
 很多初学者一上来就接触：
 
@@ -879,71 +1155,6 @@ cmake --build build
 
 - 先把一个最小项目的构建链路跑通
 - 再逐步增加库、目录、多目标、测试
-
-----
-
-# 一条最推荐的入门路线
-
-如果你是零基础，建议按这个顺序理解：
-
-## 第一步：手工编译一个程序
-
-先亲手写过：
-
-```bash
-g++ main.cpp -o app
-```
-
-知道“编译器到底在干什么”。
-
-## 第二步：手工编译多个文件
-
-例如：
-
-```bash
-g++ main.cpp math.cpp -o app
-```
-
-理解“项目不是只有一个文件”。
-
-## 第三步：理解 `make`
-
-至少看懂下面三件事：
-
-- 目标
-- 依赖
-- 规则
-
-理解“为什么改一个头文件会触发某些文件重编译”。
-
-## 第四步：理解 `cmake`
-
-知道这些基本命令：
-
-```bash
-cmake -S . -B build
-cmake --build build
-```
-
-知道 `CMakeLists.txt` 至少会写：
-
-- `project()`
-- `add_executable()`
-- `add_library()`
-- `target_include_directories()`
-- `target_link_libraries()`
-
-## 第五步：再进入真实工程能力
-
-例如：
-
-- 第三方库管理
-- 多目录项目
-- 测试集成
-- 安装与打包
-- CI 自动构建
-
-这样学习会稳很多。
 
 ----
 
