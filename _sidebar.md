@@ -29,6 +29,7 @@
   - [运算符重载](advanced/overload-operator.md)
   - [容器/算法/迭代器](advanced/data.md)
   - [多线程](advanced/thread.md)
+  - [高并发](advanced/concurrency.md)
   - [异常与错误处理](advanced/error.md)
 
 - 面向对象
@@ -44,6 +45,7 @@
   - [编译与链接](engineering/build.md)
   - [构建工具](engineering/build-tool.md)
   - [CMake 实战](engineering/cmake.md)
+  - [RPM 打包](engineering/rpm.md)
   - [第三方库与依赖管理](engineering/dependency.md)
 
 - 随笔
