@@ -309,8 +309,14 @@ void workerThread(int client_fd) {
     if (bytes_read > 0) {
         std::cout << "[线程 " << std::this_thread::get_id() << "] 收到数据: " << buffer;
         write(client_fd, buffer, bytes_read);  // Echo：原样返回
+
+		// XXX 操作系统会回收并复用线程 ID。
+		// 每次有数据到来，代码创建一个新线程，这个线程只做了一次 read + write 就结束了，生命周期极短（微秒级别）。
+		// 当线程结束后，操作系统会回收它的线程 ID。下一次再创建新线程时，OS 很可能把刚回收的 ID 分配给新线程。
+  		// 所以 sleep 10 秒，让线程活久一点，这样在服务端能看到是不同的线程 ID 在回消息
+		std::this_thread::sleep_for(std::chrono::seconds(10));
     } else if (bytes_read == 0) {
-        std::cout << "客户端断开连接\n";
+        std::cout << "客户端断开连接 fd " << client_fd << std::endl;
         close(client_fd);
     }
 }
@@ -330,7 +336,13 @@ int main() {
 
     // 2. 创建 epoll 实例（大堂经理上班了）
     int epoll_fd = epoll_create1(0);
+
     struct epoll_event event, events[MAX_EVENTS];
+	// 同时声明了两个变量，类型都是 struct epoll_event
+	// event: 一个单独的 epoll_event 结构体变量，通常用来配置你想要监听的事件（比如注册到 epoll 时使用）
+	// events[MAX_EVENTS]: 一个大小为 MAX_EVENTS 的 epoll_event 数组，通常用来接收 epoll_wait() 返回的就绪事件列表
+
+	// XXX 类似这个 int a, b[10];   // a 是一个 int，b 是一个 int[10] 数组
 
     // 让 epoll 监听 server_fd 的"可读"事件（有新客人来了）
     event.events = EPOLLIN;
@@ -349,8 +361,7 @@ int main() {
                 // 情况 A：有新客户端连接
                 sockaddr_in client_addr{};
                 socklen_t client_len = sizeof(client_addr);
-                int client_fd = accept(server_fd,
-                    (struct sockaddr*)&client_addr, &client_len);
+                int client_fd = accept(server_fd, (struct sockaddr*)&client_addr, &client_len);
 
                 setNonBlocking(client_fd);
 
@@ -359,9 +370,12 @@ int main() {
                 epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client_fd, &event);
                 std::cout << "新客户端连接: fd " << client_fd << "\n";
 
+				std::string msg = "你的fd是: " + std::to_string(client_fd) + "\n";
+				write(client_fd, msg.c_str(), msg.size());
             } else {
                 // 情况 B：已有客户端发来了数据
                 int client_fd = events[i].data.fd;
+                std::cout << "旧客户端来了数据: fd " << client_fd << "\n";
                 // 把工作扔给"线程"处理（工业代码中这里用线程池）
                 std::thread(workerThread, client_fd).detach();
             }
@@ -375,21 +389,11 @@ int main() {
 
 ### 这段代码的架构拆解
 
-```
-                    ┌─────────────────────┐
-                    │   epoll_wait()      │
-                    │   (大堂经理等待)     │
-                    └────────┬────────────┘
-                             │ 有事件了！
-                    ┌────────▼────────────┐
-                    │   事件分发          │
-                    └────────┬────────────┘
-                  ┌──────────┼──────────────┐
-                  │                         │
-          ┌───────▼────────┐       ┌────────▼───────┐
-          │ 新连接(accept) │       │ 数据到达(read) │
-          │ 注册到 epoll   │       │ 扔给工作线程   │
-          └────────────────┘       └────────────────┘
+```mermaid
+graph TD
+    A["epoll_wait()<br>(大堂经理等待)"] -->|有事件了！| B["事件分发"]
+    B --> C["新连接(accept)<br>注册到 epoll"]
+    B --> D["数据到达(read)<br>扔给工作线程"]
 ```
 
 核心设计思想：
@@ -397,16 +401,14 @@ int main() {
 2. **新连接**到来时，把它注册到 epoll，以后它的数据事件也能被监听
 3. **有数据时**，不在主线程处理（避免阻塞事件循环），而是交给工作线程
 
-> 上面的示例用 `std::thread(...).detach()` 来模拟线程池。  
+> 上面的示例用 `std::thread(...).detach()` 来模拟线程池，实际是每次创建新的线程。  
 > 这在演示中可以，但在生产中绝对不行——每个事件都创建一个新线程，和"一连接一线程"一样昂贵。
 
 ----
 
 # 线程池
 
-## 为什么需要线程池？
-
-回顾上一节的代码，每次有数据事件，我们都 `std::thread(...).detach()`——这意味着每个事件都创建一个新线程，事件处理完线程就销毁。
+回顾上一节的代码，每次有数据事件，都创建一个新线程，事件处理完线程就销毁。
 
 ```cpp
 std::thread(workerThread, client_fd).detach();  // 每次都创建新线程！
@@ -418,13 +420,11 @@ std::thread(workerThread, client_fd).detach();  // 每次都创建新线程！
 - **销毁线程同样昂贵**：回收资源、系统调用
 - **线程数量不可控**：如果突然涌入 10 万个事件，就会尝试创建 10 万个线程
 
-> 类比：你的餐厅大堂经理发现有客人举手了，就去外面现场招聘一个服务员来服务这桌客人，服务完就辞退。每桌都这样。荒谬吗？当然。
+> `线程池的思想`：预先建好一批线程，让它们在（等待队列）待命，有任务来了就从队列里取出执行，干完了继续待命。
 
-**线程池的思想**：预先雇好一批服务员（线程），让他们在休息室（等待队列）待命。有任务来了就从队列里取一个出来干活，干完了回休息室继续等。
+## Go 协程池
 
-## Go 程序员的直觉
-
-在 Go 里，你可能用过这样的 worker pool 模式：
+在 Go 里，你可能用过这样的 `worker pool` 模式：
 
 ```go
 jobs := make(chan Job, 100)
@@ -444,62 +444,129 @@ for _, j := range allJobs {
 }
 ```
 
-C++ 的线程池做的是**完全一样的事情**——只是没有 goroutine 和 channel 语法糖，需要用 `std::thread` + `std::mutex` + `std::condition_variable` + `std::queue` 手搓。
+> C++ 的线程池做的是 `完全一样的事情`；只是没有 goroutine 和 channel 语法糖，  
+> 需要用 `std::thread` + `std::mutex` + `std::condition_variable` + `std::queue` 手搓。
 
-## C++ 线程池实现
+## C++ 线程池
 
-下面是一个可用于生产的线程池实现，你可以逐行对照 Go 的 channel + goroutine 模型来理解：
+下面是一个可用于生产的线程池实现，你可以逐行对照 Go 的 channel + goroutine 模型来理解。
+
+> 这段代码用到了变参模板、尾置返回类型、完美转发等 C++11 模板特性，
+> 如果你还不熟悉，建议先阅读 [模板入门](base/template.md) 中的**进阶用法**章节。
 
 ```cpp
-#include <vector>
-#include <queue>
-#include <thread>
-#include <mutex>
-#include <condition_variable>
-#include <functional>
-#include <future>
+#include <iostream>
+#include <vector>       // 动态数组容器
+#include <queue>        // FIFO 队列容器（底层默认是 deque）
+#include <thread>       // std::thread
+#include <mutex>        // std::mutex, std::unique_lock
+#include <condition_variable>  // std::condition_variable
+#include <functional>   // std::function, std::bind
+#include <future>       // std::future, std::packaged_task
 
 class ThreadPool {
 public:
+    // explicit 防止隐式类型转换，比如 ThreadPool pool = 4; 会编译报错
     explicit ThreadPool(size_t num_threads) {
         for (size_t i = 0; i < num_threads; ++i) {
+
+            // emplace_back vs push_back:
+            //   push_back(obj)  —— 先构造 obj，再拷贝/移动到 vector 末尾
+            //   emplace_back(args...) —— 直接在 vector 末尾用 args 原地构造对象，省去拷贝
+            //   这里传入一个 lambda，emplace_back 会用这个 lambda 直接原地构造 std::thread
+            //   相当于 workers_.push_back(std::thread([this] { ... }))，但少一次移动
             workers_.emplace_back([this] {
+                // 每个工作线程执行一个无限循环，不断从队列取任务
                 while (true) {
+                    // std::function<void()> 是一个通用可调用对象包装器
+                    // 可以持有 lambda、函数指针、bind 表达式等任何"无参数、无返回值"的可调用对象
                     std::function<void()> task;
-                    {
+
+                    {   // 大括号限定 lock 的作用域，出了这个大括号锁就自动释放（RAII）
                         std::unique_lock<std::mutex> lock(mutex_);
-                        // 等待条件：队列非空 或 线程池关闭
-                        // 等价于 Go 的 for task := range tasks { ... }
+
+                        // cv_.wait(lock, predicate):
+                        //   如果 predicate 返回 false，就释放锁并阻塞当前线程
+                        //   被 notify 唤醒后重新加锁，再次检查 predicate
+                        //   等价于 Go 的 for task := range tasks { ... }
                         cv_.wait(lock, [this] {
                             return stop_ || !tasks_.empty();
                         });
+
+                        // 线程池已停止且队列空了，退出线程
                         if (stop_ && tasks_.empty()) return;
+
+                        // std::move 将队首任务"移动"出来，避免拷贝开销
                         task = std::move(tasks_.front());
                         tasks_.pop();
                     }
-                    task();  // 执行任务（锁已释放，不会阻塞其他线程取任务）
+                    // 锁已释放，执行任务不会阻塞其他线程取任务
+                    task();
                 }
             });
         }
     }
 
-    // 提交任务，返回 future 用于获取结果
-    // 等价于 Go 的 jobs <- job，但还能拿到返回值
+    // ==================== submit 方法详解 ====================
+    //
+    // 这里涉及多个 C++11 高级特性，逐一拆解：
+    //
+    // 1. template <typename F, typename... Args>
+    //    变参模板（variadic template）：
+    //      F 是可调用对象的类型（lambda / 函数指针 / functor）
+    //      Args... 是零个或多个参数类型，"..." 表示参数包（parameter pack）
+    //      这样 submit 可以接受任意签名的函数
+    //
+    // 2. auto submit(...) -> std::future<decltype(f(args...))>
+    //    尾置返回类型（trailing return type）：
+    //      因为返回类型依赖参数 f 和 args，写在前面时它们还没声明
+    //      所以用 auto + -> 把返回类型放到参数列表之后
+    //    decltype(f(args...))：
+    //      编译期推导表达式 f(args...) 的返回类型
+    //      如果 f 返回 int，则 decltype(...) 就是 int
+    //
+    // 3. F&& 和 Args&&...
+    //    万能引用（universal reference）：
+    //      在模板中 T&& 既能绑定左值也能绑定右值
+    //      配合 std::forward 实现完美转发，避免不必要的拷贝
+    //
+    // 详细原理参见 [模板入门 - 进阶用法](base/template.md)
+    //
     template <typename F, typename... Args>
     auto submit(F&& f, Args&&... args)
         -> std::future<decltype(f(args...))>
     {
+        // using 是类型别名，等价于 typedef
+        // 这里拿到 f(args...) 的返回类型，后续多次使用
         using ReturnType = decltype(f(args...));
+
+        // std::packaged_task<ReturnType()>:
+        //   把一个可调用对象包装起来，使其返回值可以通过 future 获取
+        //   ReturnType() 表示"无参数、返回 ReturnType 的函数签名"
+        //
+        // std::make_shared 在堆上创建对象并返回 shared_ptr
+        //   因为 packaged_task 要在 submit 返回后仍然存活（被工作线程执行），
+        //   所以不能放栈上，必须用 shared_ptr 延长生命周期
+        //
+        // std::bind(std::forward<F>(f), std::forward<Args>(args)...)
+        //   把函数 f 和它的参数 args 绑定在一起，生成一个无参可调用对象
+        //   std::forward 保持参数的原始值类别（左值/右值），避免不必要的拷贝
         auto task = std::make_shared<std::packaged_task<ReturnType()>>(
             std::bind(std::forward<F>(f), std::forward<Args>(args)...)
         );
+
+        // 从 packaged_task 获取 future，调用者凭此取结果
         std::future<ReturnType> result = task->get_future();
+
         {
             std::unique_lock<std::mutex> lock(mutex_);
+            // 将 task 包装成 std::function<void()> 放入队列
+            // lambda 捕获 shared_ptr（值捕获），引用计数 +1，保证 task 不被释放
+            // (*task)() 调用 packaged_task 的 operator()，执行实际函数并存储返回值
             tasks_.emplace([task]() { (*task)(); });
         }
-        cv_.notify_one();  // 唤醒一个等待的工作线程
-        return result;
+        cv_.notify_one();  // 唤醒一个等待的工作线程来执行任务
+        return result;     // 返回 future 给调用者
     }
 
     ~ThreadPool() {
@@ -507,53 +574,54 @@ public:
             std::unique_lock<std::mutex> lock(mutex_);
             stop_ = true;
         }
-        cv_.notify_all();  // 唤醒所有线程让它们退出
+        cv_.notify_all();  // 唤醒所有线程让它们检查 stop_ 标志并退出
         for (auto& worker : workers_) {
-            worker.join();
+            worker.join();  // 等待每个线程执行完毕
         }
     }
 
 private:
-    std::vector<std::thread> workers_;          // 工作线程
-    std::queue<std::function<void()>> tasks_;   // 任务队列（等价于 Go 的 channel）
-    std::mutex mutex_;                          // 保护队列的锁
-    std::condition_variable cv_;                // 通知线程"有新任务了"
-    bool stop_ = false;                         // 关闭标志
+    // std::vector<std::thread> workers_;
+    //   声明一个空的 vector，此时 size 为 0，不包含任何 thread 对象
+    //   后续通过 emplace_back 逐个添加线程
+    //   类比 Go: var workers []goroutine （概念上）
+    std::vector<std::thread> workers_;
+
+    // std::queue<std::function<void()>> tasks_;
+    //   声明一个空的先进先出队列，元素类型是 std::function<void()>
+    //   等价于 Go 的 tasks := make(chan func(), 0) （无缓冲 channel 的概念）
+    std::queue<std::function<void()>> tasks_;
+
+    std::mutex mutex_;
+    std::condition_variable cv_;
+    bool stop_ = false;
 };
-```
 
-### 与 Go channel 的对照
-
-| Go 概念 | C++ 对应 |
-|---------|----------|
-| `chan Job` | `std::queue<std::function<void()>>` + `std::mutex` |
-| `jobs <- task` | `tasks_.push(task)` + `cv_.notify_one()` |
-| `for job := range jobs` | `cv_.wait(lock, pred)` + `tasks_.pop()` |
-| `close(jobs)` | `stop_ = true` + `cv_.notify_all()` |
-| goroutine | `std::thread`（但数量固定，不会动态创建） |
-
-### 使用示例
-
-```cpp
 int main() {
-    ThreadPool pool(4);  // 4 个工作线程
+    ThreadPool pool(4);  // 创建 4 个工作线程
 
-    // 提交 10 个任务
+    // std::vector<std::future<int>> results;
+    //   声明一个空的 vector，元素类型是 std::future<int>
+    //   用于收集每个异步任务的"取货凭证"
     std::vector<std::future<int>> results;
+
     for (int i = 0; i < 10; ++i) {
+        // pool.submit 返回 std::future<int>
+        // push_back 将其移动到 vector 末尾（future 不可拷贝，只能移动）
         results.push_back(pool.submit([i] {
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
-            return i * i;
+            return i * i;  // 这个返回值会被 packaged_task 捕获，通过 future 传回
         }));
     }
 
-    // 获取结果
+    // fut.get() 会阻塞直到对应任务完成，然后返回结果
     for (auto& fut : results) {
         std::cout << fut.get() << " ";
     }
     std::cout << std::endl;
 
     return 0;
+    // pool 离开作用域 → 析构函数被调用 → 等待所有线程结束
 }
 ```
 
