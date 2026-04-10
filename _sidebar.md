@@ -27,6 +27,7 @@
   - [函数进阶](advanced/func.md)
   - [函数重载](advanced/overload-func.md)
   - [运算符重载](advanced/overload-operator.md)
+  - [模板](advanced/template.md)
   - [容器/算法/迭代器](advanced/data.md)
   - [网络编程基础](advanced/network.md)
   - [多线程](advanced/thread.md)
@@ -54,7 +55,6 @@
   - [几种初始化](note/init.md)
   - [手动内存管理](note/new-delete.md)
   - [安全边界与未定义行为](base/safety.md)
-  - [模板入门](base/template.md)
   - [调试入门](start/debug.md)
   - [编码规范](start/code-style.md)
 

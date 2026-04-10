@@ -452,7 +452,7 @@ for _, j := range allJobs {
 下面是一个可用于生产的线程池实现，你可以逐行对照 Go 的 channel + goroutine 模型来理解。
 
 > 这段代码用到了变参模板、尾置返回类型、完美转发等 C++11 模板特性，
-> 如果你还不熟悉，建议先阅读 [模板入门](base/template.md) 中的**进阶用法**章节。
+> 如果你还不熟悉，建议先阅读 [模板](advanced/template.md) 章节。
 
 ```cpp
 #include <iostream>
@@ -530,7 +530,7 @@ public:
     //      在模板中 T&& 既能绑定左值也能绑定右值
     //      配合 std::forward 实现完美转发，避免不必要的拷贝
     //
-    // 详细原理参见 [模板入门 - 进阶用法](base/template.md)
+    // 详细原理参见 [模板](advanced/template.md)
     //
     template <typename F, typename... Args>
     auto submit(F&& f, Args&&... args)
