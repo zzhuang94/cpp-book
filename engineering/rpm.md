@@ -152,7 +152,7 @@ package: tar
 
 ## 宏定义区
 
-```spec
+```ini
 %define __os_install_post %{nil}
 %define debug_package %{nil}
 %define release_id 0
@@ -171,7 +171,7 @@ package: tar
 
 ## 头部信息区（Preamble）
 
-```spec
+```ini
 Name:       demo-server
 Version:    1.2.5
 Release:    %{release_id}
@@ -230,7 +230,7 @@ demo-server-1.2.5-0.x86_64.rpm
 
 ## %description
 
-```spec
+```ini
 %description
 Demo server
 ```
@@ -239,7 +239,7 @@ Demo server
 
 ## %prep — 准备阶段
 
-```spec
+```ini
 %prep
 %setup -q -n %{name}-%{version}
 ```
@@ -264,7 +264,7 @@ Demo server
 
 ## %build — 编译阶段
 
-```spec
+```ini
 %build
 echo "build"
 cd %{_builddir}/%{name}-%{version}/src
@@ -284,14 +284,14 @@ make -C app/server
 
 不同的包根据自身需求，`%build` 的内容差异很大。例如 `demo-manager` 不需要编译（它只是打包已有的二进制和静态资源），所以它的 `%build` 只有一句：
 
-```spec
+```ini
 %build
 echo "Needn't build..."
 ```
 
 而 `demo-plugin` 里编译的是 Go 语言写的程序：
 
-```spec
+```ini
 %build
 make -C app/plugin/go-demo-handler
 make -C app/plugin/online-status
@@ -303,7 +303,7 @@ make -C app/plugin/online-status
 
 > 这是最容易被误解的一个阶段。`%install` **不是真的往目标机器上装软件**，而是往一个虚拟根目录里"模拟安装"。
 
-```spec
+```ini
 %install
 rm -rf ${RPM_BUILD_ROOT}/*
 
@@ -356,7 +356,7 @@ rpmbuild 最终会把 `$RPM_BUILD_ROOT` 下的所有文件打进 `.rpm`。用户
 
 ## %clean — 清理阶段
 
-```spec
+```ini
 %clean
 rm -rf %{buildroot}
 ```
@@ -367,7 +367,7 @@ rm -rf %{buildroot}
 
 > `%files` 告诉 rpmbuild：**最终 `.rpm` 包里要包含哪些文件**。
 
-```spec
+```ini
 %files
 %defattr(644,root,root,-)
 /opt/soft/demo-server/conf/login.conf
@@ -384,7 +384,7 @@ rm -rf %{buildroot}
 
 ### %defattr 的含义
 
-```spec
+```ini
 %defattr(文件权限, 所有者, 所属组, 目录权限)
 ```
 
@@ -406,7 +406,7 @@ rm -rf %{buildroot}
 
 可以使用通配符：
 
-```spec
+```ini
 /opt/soft/demo-server/bin/*.sh      # 匹配所有 .sh 文件
 /opt/soft/demo-server/bin/*/*.sh    # 匹配子目录下的 .sh 文件
 /opt/soft/connector/demo-status/sbin/*   # 匹配所有文件
@@ -561,7 +561,7 @@ remove_link /opt/soft/base-framework/conf/service/dispatch.conf
 
 # %changelog — 变更日志
 
-```spec
+```ini
 %changelog
 * Wed Aug 20 2025  zhangsan zhangsan@example.com 1.2.5-0
 - release 1.2.5-0  Add more features in connector.
@@ -892,7 +892,7 @@ Release: 0
 
 # Requires 依赖管理
 
-```spec
+```ini
 Requires: base-framework >= 3.4.0-41
 ```
 
@@ -901,13 +901,13 @@ Requires: base-framework >= 3.4.0-41
 - `>=` 表示最低版本要求
 - 也可以用 `=`（精确版本）、`<=`（最高版本）等
 
-```spec
+```ini
 Requires: base-framework >= 3.5.5-1 base-tools >= 4.0.0-19
 ```
 
 多个依赖用空格分隔。如果依赖不满足，`rpm -ivh` 会拒绝安装并给出提示。
 
-```spec
+```ini
 AutoReqProv: no
 ```
 
