@@ -1,16 +1,34 @@
 # set
 
-## 1 概述
+## 概述
 
-可以把 `std::set` 想成「只关心键、不关心值」的 `map`：里面是一堆**互不相同**的元素，从小到大排好队。适合去重、判断出现过没有、又希望遍历结果**有序**的场景。需要键值对请看 `map.md`；允许重复键用 `multiset.md`；不要顺序、只要哈希的平均速度，用 `unordered-set.md`。
+> 可以把 `std::set` 想成「只关心键、不关心值」的 `map`：里面是一堆**互不相同**的元素，从小到大排好队。
 
-插入重复键时，`insert` 会返回 `pair<iterator,bool>` 告诉你「有没有真的插进去」——没插进去说明原来就有。比较器照样得是**严格弱序**，和 `map` 一条绳上的蚂蚱。`erase(k)` 可以传键，返回值是删掉了几条（0 或 1）。C++11 起同样有 `emplace`、移动和 `cbegin`/`cend`；迭代器解引用是 `const Key&`，没有 `.second`。若你发现自己其实在维护「键 → 值」两段信息，就别硬把 `pair` 塞进 `set` 当键了，换 `map` 可读性会好很多。
+- 适合去重、判断出现过没有、又希望遍历结果**有序**的场景
+- 允许重复键用 `multiset`；
+- 不要顺序、只要哈希的平均速度，用 `unordered-set`。
 
-----
+插入重复键时，`insert` 会返回 `pair<iterator,bool>` 告诉你「有没有真的插进去」——没插进去说明原来就有。
 
-## 2 接口
+> 比较器是**严格弱序**，和 `map` 一样。
 
-头文件 `<set>`。
+这里的「比较器」指 `set<K, Compare>` 里的 `Compare`：一个“决定谁排在谁前面”的规则，通常长这样：
+
+```cpp
+struct Compare {
+    bool operator()(const K& a, const K& b) const; // a 是否应该排在 b 前面？
+};
+```
+
+`set` 的默认比较器是 `std::less<K>`（一般等价于用 `<` 做升序）。`set` 的“有序”和“去重”都只看比较器，并不依赖 `==`。
+
+所谓**严格弱序**（strict weak ordering），你可以把它理解成“像正常的排序规则一样靠谱”，至少要满足这些直觉性质：
+
+- **不能自己比自己小**：`comp(x, x)` 必须为 `false`
+- **传递性**：若 `comp(a,b)` 且 `comp(b,c)`，则必须 `comp(a,c)`
+- **等价也要一致**：若 `a` 与 `b` 等价、`b` 与 `c` 等价，则 `a` 与 `c` 也必须等价
+
+## 接口
 
 | 成员 | 功能与用法 |
 |------|------------|
@@ -27,7 +45,7 @@
 
 ----
 
-## 3 示例
+## 示例
 
 ```cpp
 #include <iostream>
@@ -47,7 +65,7 @@ int main() {
     }
 
     std::cout << "sorted names:";
-    for (std::set<std::string>::const_iterator it = names.begin(); it != names.end(); ++it) {
+    for (auto it = names.begin(); it != names.end(); ++it) {
         std::cout << ' ' << *it;
     }
     std::cout << "\n";
@@ -55,12 +73,17 @@ int main() {
     if (names.erase("bob") > 0) {
         std::cout << "removed bob\n";
     }
+    std::cout << "after erase bob:";
+    for (auto it = names.begin(); it != names.end(); ++it) {
+        std::cout << ' ' << *it;
+    }
+    std::cout << "\n";
 
     std::set<int> nums;
     nums.insert(5);
     nums.insert(1);
     nums.insert(3);
-    std::set<int>::iterator lb = nums.lower_bound(3);
+    std::set<int>::iterator lb = nums.lower_bound(2);
     if (lb != nums.end()) {
         std::cout << "lower_bound(3) points to " << *lb << "\n";
     }

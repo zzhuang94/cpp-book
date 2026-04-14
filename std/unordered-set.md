@@ -1,14 +1,14 @@
 # unordered_set
 
-## 1 概述
+## 概述
 
-`unordered_set` 只存键、不存值，底层哈希，**无序**、平均常数时间查找——可以理解为「去重集合的哈希版」。经典用法：`insert` 完看一眼返回的 `pair` 里 `second` 是不是 `true`，就知道是不是第一次见到这个元素。需要键值对请用 `unordered-map.md`；要排序遍历用 `set.md`。自定义类型时，和 `unordered_map` 一样要准备 **哈希** 与 **`==`**（或自定义 `KeyEqual`）。`rehash`、`reserve` 也可能让迭代器一锅端掉。
+> `unordered_set` 只存键、不存值，底层哈希，**无序**、平均常数时间查找——可以理解为「去重集合的哈希版」。
 
-头文件 `<unordered_set>`。接口比 `unordered_map` 少一维映射，其它习惯相近。
+经典用法：`insert` 完看一眼返回的 `pair` 里 `second` 是不是 `true`，就知道是不是第一次见到这个元素。
 
 ----
 
-## 2 接口
+## 接口
 
 | 成员 | 功能与用法 |
 |------|------------|
@@ -22,17 +22,23 @@
 
 ----
 
-## 3 示例
+## 示例
 
 ```cpp
 #include <functional>
 #include <iostream>
 #include <unordered_set>
 
+// 一个用在 unordered_set 里的自定义键类型。
+// 关键点：unordered_set 判重依赖两件事：
+// - “相等”：operator== 或自定义 KeyEqual
+// - “哈希”：std::hash<T> 或自定义 Hash
 struct Point {
     int x;
     int y;
 
+    // 定义“两个 Point 是否代表同一个键”。
+    // unordered_set 会先用哈希把元素分桶，再用 == 在桶内做精确判等。
     bool operator==(const Point& o) const {
         if (x != o.x) {
             return false;
@@ -46,9 +52,13 @@ struct Point {
 
 namespace std {
 
+// 为用户自定义类型 Point 提供 std::hash 特化，这是标准允许的用法。
+// 有了这个特化，就能直接写 unordered_set<Point>，无需额外传 Hash 模板参数。
 template <>
 struct hash<Point> {
     std::size_t operator()(const Point& p) const {
+        // 把 (x, y) 混合成一个 64 位值再哈希。
+        // 这里把 x 放到高 32 位，把 y 放到低 32 位（以位运算的方式“拼起来”）。
         const long long mix =
             (static_cast<long long>(p.x) << 32) ^ static_cast<unsigned int>(p.y);
         return std::hash<long long>()(mix);
@@ -59,15 +69,19 @@ struct hash<Point> {
 
 int main() {
     std::unordered_set<Point> pts;
+    // 预留桶/容量，减少插入时的 rehash 次数（示例里不是必须，但有助于性能习惯）。
     pts.reserve(16);
 
     Point a = {1, 2};
     Point b = {3, 4};
     Point c = {1, 2};
 
-    std::pair<std::unordered_set<Point>::iterator, bool> r1 = pts.insert(a);
-    std::pair<std::unordered_set<Point>::iterator, bool> r2 = pts.insert(b);
-    std::pair<std::unordered_set<Point>::iterator, bool> r3 = pts.insert(c);
+    // insert 返回 pair<iterator, bool>：
+    // - iterator 指向集合中“最终存在的那个元素”（新插入的或已存在的）
+    // - bool 表示这次是否真的插入了新元素（true=新插入，false=重复未插入）
+    auto r1 = pts.insert(a);
+    auto r2 = pts.insert(b);
+    auto r3 = pts.insert(c);
 
     if (r1.second) {
         std::cout << "inserted new point\n";
@@ -78,10 +92,13 @@ int main() {
 
     std::cout << "size=" << pts.size() << "\n";
 
+    // find：存在则返回迭代器，否则返回 end()。
     if (pts.find(b) != pts.end()) {
         std::cout << "has (3,4)\n";
     }
 
+    // erase(key) 返回删除的元素个数。
+    // 对 unordered_set 来说，要么删 1 个，要么删 0 个。
     if (pts.erase(b) > 0) {
         std::cout << "erased (3,4)\n";
     }

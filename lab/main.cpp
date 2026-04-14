@@ -1,59 +1,63 @@
+#include <functional>
 #include <iostream>
-#include <map>
-#include <stdexcept>
+#include <queue>
 #include <string>
-#include <utility>
+#include <vector>
+
+struct Task {
+    std::string name;
+    int priority;
+};
+
+struct TaskCompare {
+    bool operator()(const Task& a, const Task& b) const {
+        if (a.priority < b.priority) {
+            return true;
+        }
+        if (a.priority > b.priority) {
+            return false;
+        }
+        return false;
+    }
+};
 
 int main() {
-    std::map<std::string, int> score;
-
-    // operator[]：写入或读已存在键
-    score["Alice"] = 90;
-    score["Bob"] = 85;
-
-    if (score.find("Carol") == score.end()) {
-        std::cout << "Carol not in table (find does not insert)\n";
+    std::priority_queue<int> big_top;
+    big_top.push(3);
+    big_top.push(1);
+    big_top.push(4);
+    std::cout << "max-heap pop:";
+    while (!big_top.empty()) {
+        int v = big_top.top();
+        big_top.pop();
+        std::cout << ' ' << v;
     }
+    std::cout << "\n";
 
-    // insert：已存在则不覆盖
-    auto ins1 = score.insert(std::make_pair("Bob", 0));
-    if (!ins1.second) {
-        std::cout << "Bob already there, value still " << ins1.first->second << "\n";
+    std::priority_queue<int, std::vector<int>, std::greater<int> > small_top;
+    small_top.push(3);
+    small_top.push(1);
+    small_top.push(4);
+    std::cout << "min-heap pop:";
+    while (!small_top.empty()) {
+        int v = small_top.top();
+        small_top.pop();
+        std::cout << ' ' << v;
     }
+    std::cout << "\n";
 
-    score.emplace("Dave", 88);
+    std::priority_queue<Task, std::vector<Task>, TaskCompare> jobs;
+    jobs.push(Task{"log", 1});
+    jobs.push(Task{"fire", 9});
+    jobs.push(Task{"mail", 3});
 
-    // at：键必须存在
-    try {
-        int a = score.at("Alice");
-        std::cout << "Alice score=" << a << "\n";
-        (void)score.at("Nobody");
-    } catch (const std::out_of_range& ex) {
-        std::cout << "at() missing key: " << ex.what() << "\n";
+    std::cout << "jobs by priority:";
+    while (!jobs.empty()) {
+        Task t = jobs.top();
+        jobs.pop();
+        std::cout << ' ' << t.name << '(' << t.priority << ')';
     }
-
-    // 遍历：按键序
-    for (auto it = score.begin(); it != score.end(); ++it) {
-        std::cout << it->first << " => " << it->second << "\n";
-    }
-
-    // lower_bound / upper_bound
-    std::map<int, char> rank;
-    rank[10] = 'a';
-    rank[20] = 'b';
-    rank[30] = 'c';
-
-    std::map<int, char>::iterator lo = rank.lower_bound(15);
-    std::map<int, char>::iterator hi = rank.upper_bound(25);
-    std::cout << "keys in (15,25] by iterators:\n";
-    for (std::map<int, char>::iterator j = lo; j != hi; ++j) {
-        std::cout << "  " << j->first << " -> " << j->second << "\n";
-    }
-
-    // 删除
-    if (score.erase("Bob") > 0) {
-        std::cout << "Bob erased\n";
-    }
+    std::cout << "\n";
 
     return 0;
 }

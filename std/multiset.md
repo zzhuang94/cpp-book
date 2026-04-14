@@ -1,16 +1,14 @@
 # multiset
 
-## 1 概述
+## 概述
 
-`multiset` 就是允许重复的 `set`：只有键、没有映射值，但同一个值可以出现很多遍。做「多重集」、中位数流、带重复的排名时，它比 `set` 顺手——`count` 直接告诉你堆了几层。若键必须唯一，请用 `set.md`；若要键值对的一对多，用 `multimap.md`。
+> `multiset` 就是允许重复的 `set`：只有键、没有映射值，但同一个值可以出现很多遍。
 
-遍历照样**有序**，比较器规则与 `set` 相同。最容易踩的坑是删除：**`erase(k)` 会把所有等于 `k` 的元素一次删光**；若你只想拿掉其中一个，先用 `find(k)` 拿到迭代器，再调用 `erase(it)`。
+做「多重集」、中位数流、带重复的排名时，它比 `set` 顺手，`count` 直接告诉你堆了几层。
 
 ----
 
-## 2 接口
-
-头文件 `<set>`。与 `set` 大部分相同，差异主要在「重复键」相关语义。
+## 接口
 
 | 成员 | 功能与用法 |
 |------|------------|
@@ -26,7 +24,7 @@
 
 ----
 
-## 3 示例
+## 示例
 
 ```cpp
 #include <iostream>
@@ -45,12 +43,12 @@ int main() {
     std::cout << "count(1)=" << bag.count(1) << "\n";
 
     std::cout << "sorted:";
-    for (std::multiset<int>::const_iterator it = bag.begin(); it != bag.end(); ++it) {
+    for (auto it = bag.begin(); it != bag.end(); ++it) {
         std::cout << ' ' << *it;
     }
     std::cout << "\n";
 
-    std::multiset<int>::iterator one = bag.find(1);
+    auto one = bag.find(1);
     if (one != bag.end()) {
         bag.erase(one);
     }

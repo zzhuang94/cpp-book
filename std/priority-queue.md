@@ -1,16 +1,17 @@
 # priority_queue
 
-## 1 概述
+## 概述
 
-`priority_queue` 默认是 **`vector` + 二叉堆**：堆顶 `top()` 总是「最优先」的那个。默认比较是 `std::less<T>`，数字上就是**大顶堆**——最大的在顶上。要写小顶堆，把比较器换成 `std::greater<T>`（记得 `#include <functional>`）。第三模板参数 **`Compare`** 的语义最容易写反：它决定「谁该在堆顶当老大」，建议写个三五行的小程序打印几次 `top`，确认无误再写进项目。
+> `priority_queue` 默认是 **`vector` + 二叉堆**：堆顶 `top()` 总是「最优先」的那个。
 
-和 `set` 比：取极值 `top` 是 O(1)，但想有序遍历所有元素就很别扭——适合调度、多路归并、Dijkstra 这种「只要最值」的场景。
+默认比较是 `std::less<T>`，数字上就是**大顶堆**——最大的在顶上。  
+要写小顶堆，把比较器换成 `std::greater<T>`（记得 `#include <functional>`）。
 
-头文件 `<queue>`（与 `queue` 共用）。模板 `priority_queue<T, Container, Compare>` 里，`Container` 一般用 `vector`，要满足堆算法对序列的要求。
+第三模板参数 **`Compare`** 的语义最容易写反：它决定「谁该在堆顶当老大」，建议写个三五行的小程序打印几次 `top`，确认无误再写进项目。
 
 ----
 
-## 2 接口
+## 接口
 
 | 成员 | 功能与用法 |
 |------|------------|
@@ -23,7 +24,7 @@
 
 ----
 
-## 3 示例
+## 示例
 
 ```cpp
 #include <functional>
