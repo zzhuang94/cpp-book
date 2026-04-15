@@ -1,6 +1,5 @@
 - 开始
 
-  - [简介](/)
   - [前言](start/preface.md)
   - [语言对照](start/compare.md)
   - [C++11 地图](start/cpp11-roadmap.md)
@@ -76,15 +75,16 @@
   - [stack](std/stack.md)
   - [queue](std/queue.md)
   - [priority_queue](std/priority-queue.md)
-
-- 安全与风格
-
-  - [安全边界与未定义行为](base/safety.md)
-  - [调试入门](start/debug.md)
-  - [编码规范](start/code-style.md)
+  - [tuple](std/tuple.md)
+  - [随机与正则](std/random-regex.md)
 
 - 补充专题
 
   - [几种初始化](note/init.md)
   - [手动内存管理](note/new-delete.md)
   - [后续版本概览](note/post-cpp11.md)
+  - [安全边界与未定义行为](note/safety.md)
+  - [调试入门](note/debug.md)
+  - [编码规范](note/code-style.md)
+
+- [简介](/)

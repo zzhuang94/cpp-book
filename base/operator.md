@@ -140,6 +140,14 @@ int y = static_cast<int>(x);
 - 语义更明确
 - 能区分不同转换目的
 
+## const_cast 与 reinterpret_cast
+
+`const_cast` 仅用于增删 **底层 const / volatile** 限定；通过 `const_cast` 写穿原先通过 const 访问路径所承诺的只读语义，属于未定义行为风险集中区，除与遗留接口对接外宜极少使用。
+
+`reinterpret_cast` 在几乎不检查的前提下 **按位重新解释对象表示**，常见于硬件地址、序列化缓冲与特定 ABI 约定；可移植性与别名规则（strict aliasing）约束严格，除隔离良好的底层模块外不宜进入业务层逻辑。
+
+二者均须在代码审查中 **单独标注理由**；一般业务逻辑优先 `static_cast` 与类型安全的接口设计。
+
 ----
 
 # nullptr 重载
