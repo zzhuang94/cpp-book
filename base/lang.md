@@ -157,116 +157,15 @@ int main() {
 
 所以这一章最重要的不是背更多语法，而是让你知道 `C++11` 在基础语法层面开始鼓励怎样的默认风格。
 
-## 语句块不仅是分组，也是生命周期边界
+后面的 `变量`、`常量`、`指针` 等章节，会继续把这些点展开：
 
-很多语言里，花括号主要是组织代码结构；在 `C++` 里，它还有一个非常重要的意义：
+- 作用域和生命周期
+- `auto` 的使用边界
+- `using` 的工程价值
+- `enum class` 的作用域与类型安全
+- `nullptr` 的重载语义
 
-> 局部对象离开作用域时会自动析构。
-
-例如：
-
-```cpp
-#include <iostream>
-#include <string>
-
-class Trace {
-public:
-    explicit Trace(const std::string& name) : name_(name) {
-        std::cout << "enter " << name_ << std::endl;
-    }
-
-    ~Trace() {
-        std::cout << "leave " << name_ << std::endl;
-    }
-
-private:
-    std::string name_;
-};
-
-int main() {
-    Trace outer("outer");
-
-    {
-        Trace inner("inner");
-    }
-
-    return 0;
-}
-```
-
-这个例子说明，语句块会直接影响对象生命周期，而这会继续影响锁、文件、内存、连接等资源的释放时机。
-
-----
-
-# auto 的价值和边界
-
-`auto` 不是为了偷懒，而是为了减少冗长样板。它最适合以下场景：
-
-- 右侧类型一眼可见
-- 迭代器类型太长
-- `lambda` 类型无法显式书写
-- 模板返回类型太长
-
-但下面这种情况要多想一步：
-
-```cpp
-auto value = getData();
-```
-
-如果你根本不知道 `getData()` 返回什么，那么 `auto` 可能会降低可读性。
-现代风格不是“无脑全用 `auto`”，而是“在推导清晰时使用 `auto`”。
-
-# using 不只是新语法
-
-----
-
-很多人第一次看 `using`，会觉得只是 `typedef` 的替代品。
-但在模板和复杂别名场景里，`using` 的可读性明显更好：
-
-```cpp
-using IdList = std::vector<int>;
-using NameMap = std::map<std::string, int>;
-```
-
-这会让后面的模板和标准库章节更容易阅读。
-
-# enum class 值得优先使用
-
-----
-
-传统枚举的两个典型问题是：
-
-- 枚举值容易泄露到外层作用域
-- 容易发生不受控制的隐式转换
-
-```cpp
-// 旧写法 可能会和别处的 `Red` 冲突。
-enum Color { Red, Green, Blue };
-
-// enum class 要求你显式写成 `Color::Red`，这在真实项目里可读性和安全性都更好。
-enum class Color { Red, Green, Blue }; 
-```
-
-# nullptr 很有用
-
-----
-
-`nullptr` 看起来只是个小替换，但它解决的是“空指针常量到底是不是整数 0”的历史歧义。
-
-这在函数重载里尤其重要：
-
-```cpp
-void log(int);
-void log(int*);
-
-log(nullptr);
-```
-
-这里会更明确地匹配指针版本。对初学者来说，结论可以先记成一句：
-
-> 只要表达空指针，就统一使用 `nullptr`。
-
-把这几个点合在一起看，你会发现 `C++11` 在基础语法层面做的事情很一致：尽量减少旧式模糊写法，尽量让类型、作用域和意图直接体现在代码表面。这样后面的变量、函数、容器和资源管理章节都会更容易读。
+这一章先做“建立地图”，不把这些点全部展开到底，避免和后续章节重复过深。
 
 ----
 
