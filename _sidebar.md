@@ -60,23 +60,6 @@
 
   - [size_t](std/size-t.md)
   - [copy](std/copy.md)
-  - [array](std/array.md)
-  - [vector](std/vector.md)
-  - [pair](std/pair.md)
-  - [deque](std/deque.md)
-  - [list](std/list.md)
-  - [forward_list](std/forward-list.md)
-  - [set](std/set.md)
-  - [multiset](std/multiset.md)
-  - [unordered_set](std/unordered-set.md)
-  - [map](std/map.md)
-  - [multimap](std/multimap.md)
-  - [unordered_map](std/unordered-map.md)
-  - [stack](std/stack.md)
-  - [queue](std/queue.md)
-  - [priority_queue](std/priority-queue.md)
-  - [tuple](std/tuple.md)
-  - [随机与正则](std/random-regex.md)
 
 - 补充专题
 
