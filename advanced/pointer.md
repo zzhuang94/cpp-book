@@ -247,13 +247,8 @@ delete[] arr;
 
 class User {
 public:
-    explicit User(std::string name) : name_(std::move(name)) {
-    }
-
-    void print() const {
-        std::cout << name_ << std::endl;
-    }
-
+    explicit User(std::string name) : name_(std::move(name)) {}
+    void print() const { std::cout << name_ << std::endl; }
 private:
     std::string name_;
 };
