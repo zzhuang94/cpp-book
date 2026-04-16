@@ -22,7 +22,7 @@
   - [修饰符](base/modifier.md)
   - [时间/日期](base/time.md)
 
-- 现代 C++11 核心
+- 进阶教程
 
   - [指针](advanced/pointer.md)
   - [引用](advanced/ref.md)
