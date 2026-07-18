@@ -28,7 +28,8 @@
     window.$docsify = {
       name: 'C++ 手册',
       loadSidebar: true,
-      relativePath: true,
+      // 侧栏链接是相对站点根的路径（如 start/preface.md），不要开 relativePath，
+      // 否则会按「当前章节所在目录」再拼一层，导航全部 404。
       subMaxLevel: 1,
       // 侧边栏折叠：只展开当前页所在的一级导航，其它折叠，可点击展开/折叠
       sidebarDisplayLevel: 0,
