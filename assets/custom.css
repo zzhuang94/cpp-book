@@ -4,6 +4,8 @@
 
 :root {
   --font-scale: 1;
+  --sidebar-width: 248px;
+  --content-max-width: 1120px;
 
   /* Light theme (default) */
   --bg-color: #ffffff;
@@ -41,6 +43,9 @@
   --toolbar-btn-hover: #e0e0e0;
   --toolbar-btn-active-bg: #42b983;
   --toolbar-btn-active-text: #fff;
+  /* 代码字体：Monaco（macOS）优先，其余为常见编程等宽字体回退 */
+  --code-font: Monaco, "Cascadia Code", "Cascadia Mono", "JetBrains Mono",
+    "Fira Code", Consolas, "Courier New", monospace;
   --tip-border: #f66;
   --tip-bg: rgba(255, 102, 102, 0.06);
   --tip-icon-bg: #f66;
@@ -161,6 +166,10 @@ body,
 body {
   background-color: var(--bg-color) !important;
   color: var(--text-color) !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei",
+    Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 /* ======================================================
@@ -168,16 +177,50 @@ body {
    ====================================================== */
 
 .sidebar {
-  width: 240px;
-  margin: 0 0.6rem !important;
+  width: var(--sidebar-width);
+  margin: 0 !important;
+  padding: 0.8rem 0.75rem 4rem;
+  box-sizing: border-box;
   background-color: var(--sidebar-bg) !important;
-  border-right: none !important;
+  border-right: 1px solid var(--border-color) !important;
   color: var(--sidebar-text) !important;
 }
 
 .sidebar-toggle {
-  width: 240px;
-  background-color: var(--sidebar-bg) !important;
+  left: 12px !important;
+  bottom: 12px !important;
+  width: 42px !important;
+  height: 42px !important;
+  padding: 10px !important;
+  box-sizing: border-box;
+  border: 1px solid var(--toolbar-border) !important;
+  border-radius: 11px !important;
+  background-color: var(--toolbar-bg) !important;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  opacity: 0.92;
+  z-index: 100;
+  transition: opacity 0.28s ease, transform 0.28s ease, background-color 0.3s ease,
+    border-color 0.3s ease;
+}
+
+.sidebar-toggle:hover {
+  opacity: 1;
+  transform: translateY(-1px);
+}
+
+.sidebar-toggle span {
+  width: 20px !important;
+  height: 2px !important;
+  margin-bottom: 4px !important;
+  background-color: var(--toolbar-text) !important;
+  border: 0 !important;
+  border-radius: 2px;
+}
+
+.sidebar-toggle span:last-child {
+  margin-bottom: 0 !important;
 }
 
 /* docsify dark mode: sidebar-toggle icon color */
@@ -239,7 +282,7 @@ html[data-theme="dark"] .sidebar-toggle {
    ====================================================== */
 
 .content {
-  left: 240px;
+  left: var(--sidebar-width);
   right: 0;
   bottom: auto;
   padding-top: 0.2rem;
@@ -247,6 +290,10 @@ html[data-theme="dark"] .sidebar-toggle {
   background-color: var(--bg-color) !important;
   overflow-x: hidden;
   box-sizing: border-box;
+}
+
+body.close .content {
+  left: 0;
 }
 
 .nav {
@@ -259,11 +306,12 @@ html[data-theme="dark"] .sidebar-toggle {
    ====================================================== */
 
 .markdown-section {
-  font-size: calc(16px * var(--font-scale, 1)) !important;
-  margin: 0 1rem !important;
-  padding: 1rem !important;
-  max-width: 100% !important;
-  width: auto !important;
+  font-size: calc(16.5px * var(--font-scale, 1)) !important;
+  line-height: 1.72;
+  margin: 0 auto !important;
+  padding: 1.6rem clamp(1.5rem, 4vw, 4rem) 4rem !important;
+  max-width: var(--content-max-width) !important;
+  width: 100% !important;
   box-sizing: border-box !important;
   overflow-wrap: break-word;
   word-wrap: break-word;
@@ -271,15 +319,16 @@ html[data-theme="dark"] .sidebar-toggle {
   color: var(--text-color) !important;
 }
 
-.markdown-section h1 { font-size: 2em !important; }
-.markdown-section h2 { font-size: 1.75em !important; }
-.markdown-section h3 { font-size: 1.5em !important; }
-.markdown-section h4 { font-size: 1.25em !important; }
+.markdown-section h1 { font-size: 1.9em !important; }
+.markdown-section h2 { font-size: 1.55em !important; }
+.markdown-section h3 { font-size: 1.3em !important; }
+.markdown-section h4 { font-size: 1.15em !important; }
 .markdown-section h5 { font-size: 1.1em !important; }
 .markdown-section h6 { font-size: 1em !important; }
 
 .markdown-section pre > code {
   font-size: 0.875em !important;
+  line-height: 1.65;
 }
 
 /* ======================================================
@@ -355,6 +404,8 @@ html[data-theme="dark"] .sidebar-toggle {
   background-color: var(--inline-code-bg);
   color: var(--inline-code-color);
   border-radius: 4px;
+  font-family: var(--code-font);
+  font-variant-ligatures: none;
 }
 
 /* ======================================================
@@ -364,15 +415,22 @@ html[data-theme="dark"] .sidebar-toggle {
 .markdown-section pre {
   background-color: var(--code-block-bg);
   border: 1px solid var(--border-color);
-  border-radius: 6px;
+  border-radius: 8px;
   position: relative;
   overflow-x: auto;
+  padding: 0.9rem 1rem !important;
+  tab-size: 4;
+  font-family: var(--code-font);
 }
 
 .markdown-section pre > code {
   background-color: transparent;
   color: var(--code-block-text);
   padding: 0.5rem 0;
+  font-family: var(--code-font) !important;
+  font-variant-ligatures: none;
+  font-size: 0.92em;
+  line-height: 1.55;
 }
 
 .docsify-copy-code-button {
@@ -469,6 +527,58 @@ pre code.language-cpp .token.comment,
 pre code.language-c .token.comment,
 pre code[class*="language-cpp"] .token.comment,
 pre code[class*="language-c"] .token.comment {
+  color: #7f8c98;
+  font-style: italic;
+}
+
+/* Rust / Go specific (mirror the generic dark palette, tuned) */
+pre code.language-rust .token.keyword,
+pre code[class*="language-rust"] .token.keyword,
+pre code.language-go .token.keyword,
+pre code[class*="language-go"] .token.keyword {
+  color: #c792ea;
+  font-weight: 600;
+}
+
+pre code.language-rust .token.function,
+pre code.language-rust .token.class-name,
+pre code[class*="language-rust"] .token.function,
+pre code[class*="language-rust"] .token.class-name,
+pre code.language-go .token.function,
+pre code.language-go .token.class-name,
+pre code[class*="language-go"] .token.function,
+pre code[class*="language-go"] .token.class-name {
+  color: #82aaff;
+}
+
+pre code.language-rust .token.string,
+pre code.language-rust .token.char,
+pre code[class*="language-rust"] .token.string,
+pre code[class*="language-rust"] .token.char,
+pre code.language-go .token.string,
+pre code[class*="language-go"] .token.string {
+  color: #c3e88d;
+}
+
+pre code.language-rust .token.macro,
+pre code[class*="language-rust"] .token.macro,
+pre code.language-rust .token.attribute,
+pre code[class*="language-rust"] .token.attribute {
+  color: #ffcb6b;
+}
+
+pre code.language-rust .token.lifetime-annotation,
+pre code[class*="language-rust"] .token.lifetime-annotation,
+pre code.language-rust .token.lifetime,
+pre code[class*="language-rust"] .token.lifetime {
+  color: #f78c6c;
+  font-style: italic;
+}
+
+pre code.language-rust .token.comment,
+pre code[class*="language-rust"] .token.comment,
+pre code.language-go .token.comment,
+pre code[class*="language-go"] .token.comment {
   color: #7f8c98;
   font-style: italic;
 }
@@ -653,6 +763,93 @@ html[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
   }
 }
 
+/* Tablets and landscape phones: keep the article full width and let the
+   sidebar float above it, so code examples are not squeezed into a narrow column. */
+@media (max-width: 960px) {
+  .sidebar {
+    width: min(82vw, 270px);
+    box-shadow: 8px 0 24px rgba(0, 0, 0, 0.12);
+  }
+
+  .content,
+  body.close .content {
+    left: 0 !important;
+  }
+
+  .markdown-section {
+    max-width: 100% !important;
+    padding: 1.25rem clamp(1rem, 4vw, 2rem) 4.5rem !important;
+    font-size: calc(16px * var(--font-scale, 1)) !important;
+  }
+
+  .markdown-section table {
+    display: block;
+    width: max-content;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  /* 悬浮钮贴左右底角，避免落在正文中间遮挡阅读 */
+  .sidebar-toggle {
+    left: max(4px, env(safe-area-inset-left, 0px)) !important;
+    right: auto !important;
+    bottom: max(8px, env(safe-area-inset-bottom, 0px)) !important;
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  .doc-toolbar {
+    left: auto !important;
+    right: max(4px, env(safe-area-inset-right, 0px)) !important;
+    bottom: max(8px, env(safe-area-inset-bottom, 0px)) !important;
+  }
+}
+
+/* Landscape phones are commonly used to read the code samples. */
+@media (max-width: 960px) and (orientation: landscape) {
+  .markdown-section {
+    line-height: 1.68;
+    padding-top: 1rem !important;
+  }
+
+  .markdown-section h1 { font-size: 1.7em !important; }
+  .markdown-section h2 { font-size: 1.42em !important; }
+  .markdown-section h3 { font-size: 1.22em !important; }
+
+  .markdown-section pre {
+    margin: 0.8rem 0;
+  }
+}
+
+@media (max-width: 600px) and (orientation: portrait) {
+  .markdown-section {
+    /* 左右略留白给底角悬浮钮；底边再垫高一点，末段不被挡住 */
+    padding: 1rem 0.85rem 5.25rem !important;
+    font-size: calc(15.5px * var(--font-scale, 1)) !important;
+  }
+
+  .markdown-section h1 { font-size: 1.7em !important; }
+  .markdown-section h2 { font-size: 1.4em !important; }
+  .markdown-section h3 { font-size: 1.2em !important; }
+
+  .sidebar-toggle {
+    left: max(2px, env(safe-area-inset-left, 0px)) !important;
+    bottom: max(6px, env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  .doc-toolbar {
+    right: max(2px, env(safe-area-inset-right, 0px)) !important;
+    bottom: max(6px, env(safe-area-inset-bottom, 0px)) !important;
+  }
+}
+
+@media (hover: none) {
+  .sidebar-toggle:hover,
+  .doc-toolbar-toggle:hover {
+    transform: none;
+  }
+}
+
 /* ======================================================
    Toolbar
    ====================================================== */
@@ -665,6 +862,24 @@ html[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-size: 14px;
   user-select: none;
+  transition: opacity 0.28s ease, transform 0.28s ease;
+}
+
+/* 手机端：html.fab-auto-hidden 时藏起两个悬浮钮（见 toolbar.js） */
+@media (max-width: 960px) {
+  html.fab-auto-hidden .sidebar-toggle,
+  html.fab-auto-hidden .doc-toolbar {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transform: translateY(10px);
+  }
+
+  /* 设置面板展开时，即使处于隐藏态也强制显示工具条 */
+  html.fab-auto-hidden .doc-toolbar.expanded {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    transform: none;
+  }
 }
 
 .doc-toolbar-toggle {
